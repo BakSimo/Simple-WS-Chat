@@ -1,43 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
-
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
+    <meta charset="UTF-8" />
+    <title>Chat App</title>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
+    <h1 id="current_user_name"></h1>
+    <section id="loginSection">
+      <input type="text" id="usernameReg" placeholder="Username" />
+      <button onclick="register()">Register</button>
+      <input type="text" id="usernameLog" placeholder="Username" />
+      <button onclick="login()">Login</button>
+    </section>
+    <section id="messageSection" class="hidden">
+      <textarea id="message" placeholder="Your message here"></textarea>
+      <button onclick="sendMessage()">Send</button>
+      <ul id="messages"></ul>
+    </section>
+    <script>
+      const ws = new WebSocket("ws://localhost:3000");
+      let currentUser = "";
+      let isLoggedIn = false;
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+      window.addEventListener("beforeunload", logout);
+      function logout() {
+        if (currentUser) {
+          const data = new Blob([JSON.stringify({ username: currentUser })], {
+            type: "application/json",
+          });
+          navigator.sendBeacon("/logout", data);
+        }
+      }
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
+      ws.onmessage = function (event) {
+        // if (!isLoggedIn) return;
+
+        const messagesData = JSON.parse(event.data);
+        const messagesList = document.getElementById("messages");
+        // const clientName = document.getElementById("username").value;
+        if (Array.isArray(messagesData)) {
+          for (const data of messagesData) {
+            // Предполагаем, что сообщение обернуто в дополнительный объект
+            const messageRow = document.createElement("li");
+            const isSender = data.username === currentUser;
+            const formattedData = `${data.username}: ${data.message}`;
+
+            messageRow.textContent = formattedData;
+            messageRow.className = isSender ? "sender" : "receiver";
+            messagesList.appendChild(messageRow);
+          }
+        } else {
+          // Если не массив, обрабатываем как одиночное сообщение
+          const messageRow = document.createElement("li");
+          const isSender = messagesData.username === currentUser;
+          const formattedData = `${messagesData.username}: ${messagesData.message}`;
+
+          messageRow.textContent = formattedData;
+          messageRow.className = isSender ? "sender" : "receiver";
+          messagesList.appendChild(messageRow);
+        }
+      };
+
+      function fetchMessageHistory() {
+        fetch("/history", {
+          method: "POST", // или 'GET', если вы измените метод в вашем Express-эндпоинте
+          headers: {
+            "Content-Type": "application/json",
+          },
+          // Если требуется, можно добавить тело запроса. Например, данные о пользователе.
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then((messagesData) => {
+            for (const data of messagesData) {
+              // Предполагаем, что сообщение обернуто в дополнительный объект
+              const messagesList = document.getElementById("messages");
+              const messageRow = document.createElement("li");
+              const isSender = data.username === currentUser;
+              const formattedData = `${data.username}: ${data.message}`;
+
+              messageRow.textContent = formattedData;
+              messageRow.className = isSender ? "sender" : "receiver";
+              messagesList.appendChild(messageRow);
+            }
+          })
+          .catch((error) => {
+            console.error(
+              "There has been a problem with your fetch operation:",
+              error
+            );
+          });
+      }
+
+      function register() {
+        const username = document.getElementById("usernameReg").value;
+        fetch("/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username }),
+        })
+          .then((response) => response.text())
+          .then((data) => console.log(data))
+          .catch((error) => console.error("Register Error:", error));
+      }
+
+      function login() {
+        const username = document.getElementById("usernameLog").value;
+        const loginSection = document.getElementById("loginSection");
+        const messageSection = document.getElementById("messageSection");
+        const h1 = document.getElementById("current_user_name");
+
+        fetch("/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username }),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              h1.textContent = "User not found or already in use.";
+            }
+            return response.json();
+          })
+          .then((data) => {
+            h1.textContent = `Welcome, ${username}!`;
+            currentUser = username;
+            isLoggedIn = true;
+            loginSection.classList.add("hidden");
+            messageSection.classList.remove("hidden");
+            fetchMessageHistory();
+          })
+          .catch((error) => {
+            console.error("Login Error:", error);
+          });
+      }
+      function sendMessage() {
+        // const username = document.getElementById("username").value;
+        const messageInput = document.getElementById("message");
+        if (currentUser.length && messageInput.value.length) {
+          ws.send(
+            JSON.stringify({
+              username: currentUser,
+              message: messageInput.value,
+            })
+          );
+          messageInput.value = "";
+        }
+      }
+    </script>
   </body>
 </html>

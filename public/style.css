@@ -1,0 +1,15 @@
+li {
+  list-style: none;
+}
+
+.sender {
+  text-align: right;
+}
+
+.receiver {
+  text-align: left;
+}
+
+.hidden {
+  display: none;
+}
