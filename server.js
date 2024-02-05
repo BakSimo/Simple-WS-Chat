@@ -12,8 +12,8 @@ const mongoUrl = "mongodb://localhost:27017/";
 const mongoClient = new MongoClient(mongoUrl);
 
 let db;
+let currentUsername = null;
 
-// Подключаемся к MongoDB
 async function connectDb() {
   await mongoClient.connect();
   db = mongoClient.db("chat");
@@ -21,7 +21,6 @@ async function connectDb() {
 }
 connectDb();
 
-// Регистрация пользователя
 app.use(express.json());
 app.use(express.static("public"));
 
@@ -29,13 +28,11 @@ app.post("/register", async (req, res) => {
   const { username } = req.body;
   const usersCollection = db.collection("users");
 
-  // Проверка на существование пользователя
   const userExists = await usersCollection.findOne({ username: username });
   if (userExists) {
-    return res.status(404).send("User already exists");
+    return res.status(404).send("User is already registered!");
   }
 
-  // Если пользователь не найден, продолжаем регистрацию
   await usersCollection.insertOne({ username });
   res.status(201).send("User registered " + username);
 });
@@ -43,6 +40,7 @@ app.post("/register", async (req, res) => {
 app.post("/login", async (req, res) => {
   const { username } = req.body;
   const usersCollection = db.collection("users");
+  currentUsername = username;
 
   const userExists = await usersCollection.findOne({ username: username });
   if (!userExists) {
@@ -53,13 +51,13 @@ app.post("/login", async (req, res) => {
     return res.status(402).send("User already logged in");
   }
 
-  activeUsers.add(username); // Добавляем пользователя в активные сессии
   res.status(200).json({ message: "User logged in", username });
 });
 
-// Добавляем эндпоинт для выхода пользователя
 app.post("/logout", (req, res) => {
   const { username } = req.body;
+  currentUsername = null;
+
   if (activeUsers.has(username)) {
     activeUsers.delete(username);
     res.status(200).send("Logged out successfully");
@@ -70,10 +68,17 @@ app.post("/logout", (req, res) => {
 
 app.post("/history", async (req, res) => {
   const messagesCollection = db.collection("messages");
+  const { sender, to } = req.body;
+
   try {
-    // Извлекаем все сообщения из базы данных
-    const messages = await messagesCollection.find({}).toArray();
-    // Отправляем все сохраненные сообщения в ответе на запрос
+    const messages = await messagesCollection
+      .find({
+        $or: [
+          { $and: [{ sender: sender }, { to: to }] },
+          { $and: [{ sender: to }, { to: sender }] },
+        ],
+      })
+      .toArray();
     res.status(200).json(messages);
   } catch (error) {
     console.error("Ошибка при извлечении сообщений из базы данных:", error);
@@ -81,23 +86,35 @@ app.post("/history", async (req, res) => {
   }
 });
 
-// WebSocket для обмена сообщениями
+app.post("/users_list", async (req, res) => {
+  const usersCollection = db.collection("users");
+  try {
+    const users = await usersCollection.find({}).toArray();
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Ошибка при извлечении пользователей из базы данных:", error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
 wss.on("connection", async (ws) => {
+  const messagesCollection = db.collection("messages");
+
   ws.on("message", async (data) => {
     const clientData = JSON.parse(data);
 
-    // Исправлено: Вставляем новое сообщение в базу данных с корректной структурой
     await messagesCollection.insertOne({
+      to: clientData.to,
+      sender: clientData.sender,
       username: clientData.username,
       message: clientData.message,
     });
 
-    // Исправлено: Отправляем новое сообщение всем подключенным клиентам
-    wss.clients.forEach((client) => {
+    for (client of wss.clients) {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify(clientData));
       }
-    });
+    }
   });
 });
 

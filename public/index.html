@@ -2,159 +2,34 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Chat App</title>
+    <title>Just Chat</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h1 id="current_user_name"></h1>
-    <section id="loginSection">
-      <input type="text" id="usernameReg" placeholder="Username" />
-      <button onclick="register()">Register</button>
-      <input type="text" id="usernameLog" placeholder="Username" />
-      <button onclick="login()">Login</button>
-    </section>
-    <section id="messageSection" class="hidden">
-      <textarea id="message" placeholder="Your message here"></textarea>
-      <button onclick="sendMessage()">Send</button>
-      <ul id="messages"></ul>
-    </section>
-    <script>
-      const ws = new WebSocket("ws://localhost:3000");
-      let currentUser = "";
-      let isLoggedIn = false;
-
-      window.addEventListener("beforeunload", logout);
-      function logout() {
-        if (currentUser) {
-          const data = new Blob([JSON.stringify({ username: currentUser })], {
-            type: "application/json",
-          });
-          navigator.sendBeacon("/logout", data);
-        }
-      }
-
-      ws.onmessage = function (event) {
-        // if (!isLoggedIn) return;
-
-        const messagesData = JSON.parse(event.data);
-        const messagesList = document.getElementById("messages");
-        // const clientName = document.getElementById("username").value;
-        if (Array.isArray(messagesData)) {
-          for (const data of messagesData) {
-            // Предполагаем, что сообщение обернуто в дополнительный объект
-            const messageRow = document.createElement("li");
-            const isSender = data.username === currentUser;
-            const formattedData = `${data.username}: ${data.message}`;
-
-            messageRow.textContent = formattedData;
-            messageRow.className = isSender ? "sender" : "receiver";
-            messagesList.appendChild(messageRow);
-          }
-        } else {
-          // Если не массив, обрабатываем как одиночное сообщение
-          const messageRow = document.createElement("li");
-          const isSender = messagesData.username === currentUser;
-          const formattedData = `${messagesData.username}: ${messagesData.message}`;
-
-          messageRow.textContent = formattedData;
-          messageRow.className = isSender ? "sender" : "receiver";
-          messagesList.appendChild(messageRow);
-        }
-      };
-
-      function fetchMessageHistory() {
-        fetch("/history", {
-          method: "POST", // или 'GET', если вы измените метод в вашем Express-эндпоинте
-          headers: {
-            "Content-Type": "application/json",
-          },
-          // Если требуется, можно добавить тело запроса. Например, данные о пользователе.
-        })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error("Network response was not ok");
-            }
-            return response.json();
-          })
-          .then((messagesData) => {
-            for (const data of messagesData) {
-              // Предполагаем, что сообщение обернуто в дополнительный объект
-              const messagesList = document.getElementById("messages");
-              const messageRow = document.createElement("li");
-              const isSender = data.username === currentUser;
-              const formattedData = `${data.username}: ${data.message}`;
-
-              messageRow.textContent = formattedData;
-              messageRow.className = isSender ? "sender" : "receiver";
-              messagesList.appendChild(messageRow);
-            }
-          })
-          .catch((error) => {
-            console.error(
-              "There has been a problem with your fetch operation:",
-              error
-            );
-          });
-      }
-
-      function register() {
-        const username = document.getElementById("usernameReg").value;
-        fetch("/register", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ username }),
-        })
-          .then((response) => response.text())
-          .then((data) => console.log(data))
-          .catch((error) => console.error("Register Error:", error));
-      }
-
-      function login() {
-        const username = document.getElementById("usernameLog").value;
-        const loginSection = document.getElementById("loginSection");
-        const messageSection = document.getElementById("messageSection");
-        const h1 = document.getElementById("current_user_name");
-
-        fetch("/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ username }),
-        })
-          .then((response) => {
-            if (!response.ok) {
-              h1.textContent = "User not found or already in use.";
-            }
-            return response.json();
-          })
-          .then((data) => {
-            h1.textContent = `Welcome, ${username}!`;
-            currentUser = username;
-            isLoggedIn = true;
-            loginSection.classList.add("hidden");
-            messageSection.classList.remove("hidden");
-            fetchMessageHistory();
-          })
-          .catch((error) => {
-            console.error("Login Error:", error);
-          });
-      }
-      function sendMessage() {
-        // const username = document.getElementById("username").value;
-        const messageInput = document.getElementById("message");
-        if (currentUser.length && messageInput.value.length) {
-          ws.send(
-            JSON.stringify({
-              username: currentUser,
-              message: messageInput.value,
-            })
-          );
-          messageInput.value = "";
-        }
-      }
-    </script>
+    <main>
+      <section class="header">
+        <h1 id="current_user_name">Just Chat<span>.</span></h1>
+        <h2 id="status"></h2>
+      </section>
+      <section id="login_ection">
+        <input type="text" id="username_reg" placeholder="Username" />
+        <button onclick="register()">Register</button>
+        <input type="text" id="username_log" placeholder="Username" />
+        <button onclick="login()">Login</button>
+      </section>
+      <section class="user-interface">
+        <section id="message_section" class="hidden">
+          <div class="message-input">
+            <textarea id="message" placeholder="Your message here"></textarea>
+            <button onclick="sendMessage()" class="message-send-button">Send</button>
+          </div>
+          <ul id="messages"></ul>
+        </section>
+        <section id="users_section" class="hidden">
+          <ul id="all_users"></ul>
+        </section>
+      </section>
+    </main>
+    <script src="./client.js"></script>
   </body>
 </html>
