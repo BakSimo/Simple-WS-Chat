@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Talk - Sign Up</title>
+    <link rel="stylesheet" href="./styles/registration.css" />
+    <link rel="stylesheet" href="./styles/footer.css" />
+    <link rel="stylesheet" href="./styles/main.css" />
+    <link rel="stylesheet" href="./styles/page-changing_anim.css" />
+    <link rel="stylesheet" href="./styles/media/registration_media.css" />
+    <link rel="icon" href="./assets/images/talk-ico.png" type="image/x-icon" />
+    <link
+      rel="shortcut icon"
+      href="./assets/img/icons/icon-prototype.ico"
+      type="image/x-icon"
+    />
+  </head>
+  <body>
+    <div class="falling-container">
+      <div class="falling-logo">
+        <img src="./assets/images/talk-logo_2.png" alt="" />
+      </div>
+    </div>
+    <main class="registration-page page">
+      <header class="registration-page-header">
+        <div class="logo-box">
+          <img src="./assets/images/talk-logo_2.png" alt="" />
+        </div>
+      </header>
+      <section class="registration-container">
+        <div class="fake-side"></div>
+        <div class="registration-box">
+          <h2>Sign up</h2>
+          <form action="" class="registration-form">
+            <div class="reg-mobile-box">
+              <div class="registration-email-input">
+                <label for="registration_username_input">Email</label>
+                <input
+                  type="text"
+                  id="registration_email_input"
+                  placeholder="Email"
+                  maxlength="60"
+                />
+                <h6 class="input-helper email-helper">
+                  Enter your active email
+                </h6>
+              </div>
+              <div class="registration-username-input">
+                <label for="registration_username_input">Username</label>
+                <input
+                  type="text"
+                  id="registration_username_input"
+                  placeholder="Username"
+                  maxlength="60"
+                />
+                <h6 class="input-helper username-helper">
+                  You can use letters, numbers & periods
+                </h6>
+              </div>
+            </div>
+            <div class="registration-password-input">
+              <div class="subinput">
+                <label for="registration_password_input">Password</label>
+                <div style="position: relative">
+                  <input
+                    type="password"
+                    id="registration_password_input"
+                    placeholder="Password"
+                    maxlength="16"
+                  />
+                  <div class="show-password-box">
+                    <div
+                      class="show-password-btn"
+                      onclick="togglePasswordShow()"
+                    >
+                      <img src="./assets/images/talk-ico.png" alt="" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="subinput">
+                <label for="registration_confirm_password_input"
+                  >Confirm password</label
+                >
+                <div style="position: relative">
+                  <input
+                    type="password"
+                    id="registration_confirm_password_input"
+                    placeholder="Confirm password"
+                    maxlength="16"
+                  />
+                  <div class="show-password-box">
+                    <div
+                      class="show-password-btn"
+                      onclick="toggleConfirmPasswordShow()"
+                    >
+                      <img src="./assets/images/talk-ico.png" alt="" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <h6 class="input-helper password-helper">
+              Use 6 or more characters whit mix of letters, numbers & simbols
+            </h6>
+            <div class="registration-button" onclick="register()">
+              Sign up
+            </div>
+          </form>
+          <div class="registration-links">
+            <h6><a href="./login.html">Sign in</a></h6>
+          </div>
+        </div>
+        <div class="mobile-circles">
+          <div class="mobile-circle"></div>
+          <div class="mobile-circle"></div>
+          <div class="mobile-circle"></div>
+          <div class="mobile-circle"></div>
+          <div class="mobile-circle"></div>
+          <div class="mobile-circle"></div>
+          <div class="mobile-circle"></div>
+          <div class="mobile-circle"></div>
+          <div class="mobile-circle"></div>
+          <div class="mobile-circle"></div>
+        </div>
+        <footer class="registration-footer footer">
+          <div class="footer-information">
+            <div class="footer-logo-box">
+              <img src="./assets/images/talk-logo_black_3.png" alt="" />
+            </div>
+            <div class="footer-text"><h5>2024 TALK, Inc.</h5></div>
+          </div>
+        </footer>
+      </section>
+      <section class="page-main-banner-container">
+        <div class="image-box">
+          <svg
+            style="position: absolute; top: -35px; left: -25px"
+            viewBox="0 0 200 200"
+            xmlns="http://222.23.org/2000/svg"
+          >
+            <path
+              fill="#ff0066"
+              d="M31.7,-42.9C46.5,-39.7,67.9,-40.2,72.1,-32.5C76.2,-24.7,63.3,-8.8,55,3.8C46.8,16.3,43.2,25.3,38.2,35.5C33.1,45.7,26.6,57,15.5,66.5C4.4,76.1,-11.3,83.9,-19.4,76.7C-27.5,69.4,-28.2,47.2,-32,33.1C-35.9,19,-43.1,13.1,-49.6,3.8C-56,-5.5,-61.8,-18.1,-60.3,-30.1C-58.8,-42,-50.1,-53.2,-38.8,-58C-27.6,-62.8,-13.8,-61.3,-2.7,-57.1C8.4,-52.9,16.8,-46.1,31.7,-42.9Z"
+              Transform="translate(100 100)"
+            />
+          </svg>
+          <img
+            src="./assets/images/register-laptop_banner-prototype_3.png"
+            id="reg_laptop_banner_img"
+            alt=""
+          />
+          <img
+            src="./assets/images/emogi_banner-prototype.png"
+            id="emg_banner_img"
+            alt=""
+          />
+        </div>
+      </section>
+      <div class="circles">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+      <!-- <div class="page-changing-blob"></div> -->
+    </main>
+    <script></script>
+    <script src="./js/passwordShow.js"></script>
+    <script src="./js/animation/regAnimations.js"></script>
+    <script src="./js/animation/pageChangeAnimation.js"></script>
+    <script src="./client.js"></script>
+  </body>
+</html>

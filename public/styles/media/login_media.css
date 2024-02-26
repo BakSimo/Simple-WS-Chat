@@ -1,0 +1,193 @@
+/* MEDIA WIDTH */
+
+@media (max-width: 1024px) {
+  .login-footer,
+  .login-page-header {
+    padding: 10px 15px;
+    height: 60px;
+  }
+
+  .login-page-header .logo-box {
+    width: 60px;
+    height: 60px;
+  }
+
+  .login-container {
+    padding: 10px 15px;
+    min-width: 300px;
+  }
+
+  .page-main-banner-container .image-box {
+    min-width: 476px;
+  }
+
+  .image-box #emg_banner_img {
+    width: 150px;
+  }
+}
+
+@media (max-width: 867px) {
+}
+
+@media (max-width: 767px) {
+  .login-box h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 38px;
+  }
+
+  .login-page {
+    box-shadow: none;
+    display: block;
+    background-color: var(--bg-color);
+  }
+
+  .circles,
+  .login-container .fake-side,
+  .page-main-banner-container {
+    display: none;
+  }
+
+  .mobile-circles {
+    display: block;
+  }
+
+  .login-container {
+    box-shadow: none;
+    justify-content: center;
+    width: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .login-box {
+    width: 80% !important;
+  }
+
+  .mobile-circles .mobile-circle {
+    animation: mobileCirclesAnimation 25s linear infinite;
+  }
+
+  .falling-container {
+    top: 50%;
+    transform: translateY(-50%);
+    animation: fallingLogoAnimation 1.7s cubic-bezier(0.24, 0.11, 0.28, 0.98);
+  }
+
+  .shaking {
+    animation: shakingLogoAnimation 0.2s cubic-bezier(0.24, 0.11, 0.28, 0.98);
+  }
+
+  .up {
+    animation: upLogoAnimation 1.7s cubic-bezier(1, 0.1, 0.36, 1);
+  }
+}
+
+@media (max-width: 467px) {
+  .login-box {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 367px) {
+  .login-container {
+    min-width: 265px;
+  }
+}
+
+/* MEDIA HEIGHT */
+
+@media (max-height: 431px) {
+  .login-footer {
+    padding: 5px 15px;
+    height: 45px;
+  }
+
+  .footer-logo-box {
+    width: 30px;
+    height: 30px;
+  }
+
+  .footer-text h5 {
+    font-size: 12px;
+  }
+
+  .login-form {
+    margin: 0;
+  }
+
+  .login-links {
+    justify-content: space-between;
+  }
+
+  .login-box h2 {
+    text-align: center;
+    margin-bottom: 0;
+    font-size: 38px;
+  }
+
+  .login-page {
+    box-shadow: none;
+    display: block;
+    background-color: var(--bg-color);
+  }
+
+  .circles,
+  .login-container .fake-side,
+  .page-main-banner-container {
+    display: none;
+  }
+
+  .mobile-circles {
+    display: block;
+  }
+
+  .login-container {
+    box-shadow: none;
+    justify-content: center;
+    width: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .login-box {
+    width: 80% !important;
+  }
+
+  .mobile-circles .mobile-circle {
+    animation: mobileCirclesAnimation 25s linear infinite;
+  }
+
+  .falling-container {
+    top: 50%;
+    transform: translateY(-50%);
+    animation: fallingLogoAnimation 1.7s cubic-bezier(0.24, 0.11, 0.28, 0.98);
+  }
+
+  .shaking {
+    animation: shakingLogoAnimation 0.2s cubic-bezier(0.24, 0.11, 0.28, 0.98);
+  }
+
+  .up {
+    animation: upLogoAnimation 1.7s cubic-bezier(1, 0.1, 0.36, 1);
+  }
+}
+
+@media (max-height: 377px) {
+  label {
+    font-size: 14px;
+  }
+
+  input[type="password"],
+  input[type="text"] {
+    padding: 7px 10px;
+  }
+
+  .input-helper {
+    font-size: 11px;
+  }
+
+  .login-button {
+    margin: 0 0 5px 0;
+  }
+}

@@ -1,184 +1,390 @@
-window.addEventListener("beforeunload", logout);
 const ws = new WebSocket("ws://localhost:3000");
 
+const messageInput = document.getElementById("msg-input");
+const typingIndicator = document.querySelector(".selected-user-status");
+let typingTimeout;
 let currentUser = null;
+let currentUEmail = null;
 let selectedUser = null;
+let isAuth = false;
+let isLoading = false;
+
+(async () => {
+  if (localStorage.getItem("token")) {
+    await checkAuth();
+    await getUsersList();
+  }
+})();
+
+async function fetchWithAuthCheck(url, options = {}) {
+  try {
+    const response = await fetch(url, options);
+    if (response.status === 401) {
+      await checkAuth();
+      const updatedOptions = {
+        ...options,
+        headers: {
+          ...options.headers,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      };
+      return fetch(url, updatedOptions);
+    }
+    return response;
+  } catch (error) {
+    console.error("Ошибка при выполнении запроса:", error);
+  }
+}
+
+async function checkAuth() {
+  isLoading = true;
+  try {
+    const response = await fetch("/auth/refresh", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    const data = await response.json();
+    if (data.accessToken) {
+      localStorage.setItem("token", data.accessToken);
+      isAuth = true;
+      currentUser = data.user.username;
+      currentEmail = data.user.email;
+    } else {
+      // Обработка ошибки аутентификации, например, переадресация на страницу входа
+    }
+  } catch (error) {
+    console.log(error);
+  } finally {
+    isLoading = false;
+  }
+}
+
+document.getElementById("uploadForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const formData = new FormData();
+  const imageInput = document.getElementById("file_upload");
+
+  if (imageInput.files.length > 0) {
+    formData.append("image", imageInput.files[0]);
+    formData.append("currentUser", JSON.stringify(currentUser));
+
+    fetch("auth/upload", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Success:", data);
+        fetchImages(); // После загрузки обновить список изображений
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }
+});
 
 ws.onmessage = function (event) {
-  const eventData = JSON.parse(event.data);
+  const data = JSON.parse(event.data);
 
-  if (eventData.sender === selectedUser || eventData.sender === currentUser) {
-    const messagesList = document.getElementById("messages");
-    const messageRow = document.createElement("li");
-    const messageText = document.createElement("p");
-    const userNameSpan = document.createElement("span");
-    const isSender = eventData.username === currentUser;
+  if (data.sender === selectedUser || data.sender === currentUser) {
+    const messagesList = document.querySelector(".messages");
+    const isSender = data.sender === currentUser;
+    const messageLi = document.createElement("li");
+    messageLi.className = `message ${isSender ? "sender" : "receiver"}`;
+    messageLi.innerHTML = `
+    <div class="u-image">
+      <img src="${
+        isSender
+          ? "./assets/images/our-user-img.png"
+          : "./assets/images/user-img.png"
+      }" alt="" />
+    </div>
+    <div class="message-box">
+      <p>${data.message}</p>
+    </div>`;
 
-    messageText.textContent = eventData.message;
-    messageRow.className = isSender ? "sender" : "receiver";
-    userNameSpan.textContent = eventData.username;
-    userNameSpan.className = isSender ? "sender-name" : "receiver-name";
-    messageRow.appendChild(messageText);
-    messageRow.appendChild(userNameSpan);
-    messagesList.appendChild(messageRow);
-
+    messagesList.appendChild(messageLi);
     scrollToBottom(messagesList);
   }
 };
 
-function logout() {
-  if (currentUser) {
-    const data = new Blob([JSON.stringify({ username: currentUser })], {
-      type: "application/json",
-    });
-    navigator.sendBeacon("/logout", data);
+ws.onmessage = function (event) {
+  let data;
+  try {
+    data = JSON.parse(event.data);
+  } catch (error) {
+    console.error("Ошибка парсинга данных", error);
+    return;
+  }
+
+  if (data.type === "typing") {
+    if (data.receiver !== selectedUser) {
+      typingIndicator.textContent = `Typing...`;
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => {
+        typingIndicator.textContent = "";
+      }, 3000);
+    }
+  } else {
+    const data = JSON.parse(event.data);
+
+    if (data.sender === selectedUser || data.sender === currentUser) {
+      const messagesList = document.querySelector(".messages");
+      const isSender = data.sender === currentUser;
+      const messageLi = document.createElement("li");
+      messageLi.className = `message ${isSender ? "sender" : "receiver"}`;
+      messageLi.innerHTML = `
+        <div class="u-image">
+          <img src="${
+            isSender
+              ? "./assets/images/our-user-img.png"
+              : "./assets/images/user-img.png"
+          }" alt="" />
+        </div>
+        <div class="message-box">
+          <p>${data.message}</p>
+        </div>`;
+
+      messagesList.appendChild(messageLi);
+      scrollToBottom(messagesList);
+    }
+  }
+};
+
+if (window.location.pathname === "/chat") {
+  messageInput.addEventListener("input", () => {
+    sendTypingNotification(currentUser, selectedUser);
+
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+      typingIndicator.textContent = "";
+    }, 2000);
+  });
+}
+
+function sendTypingNotification(senderName, receiverName) {
+  if (ws.readyState === WebSocket.OPEN) {
+    const typingNotification = {
+      type: "typing",
+      sender: senderName,
+      to: receiverName,
+    };
+    ws.send(JSON.stringify(typingNotification));
   }
 }
 
-function fetchMessageHistory() {
-  fetch("/history", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      to: selectedUser,
-      sender: currentUser,
-    }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      return response.json();
-    })
-    .then((messagesData) => {
-      const messagesList = document.getElementById("messages");
-      messagesList.innerHTML = "";
-      for (const data of messagesData) {
-        const messageRow = document.createElement("li");
-        const messageText = document.createElement("p");
-        const userNameSpan = document.createElement("span");
-        const isSender = data.username === currentUser;
-
-        messageText.textContent = data.message;
-        messageRow.className = isSender ? "sender" : "receiver";
-        userNameSpan.textContent = data.username;
-        userNameSpan.className = isSender ? "sender-name" : "receiver-name";
-        messageRow.appendChild(messageText);
-        messageRow.appendChild(userNameSpan);
-        messagesList.appendChild(messageRow);
-      }
-      scrollToBottom(messagesList);
-    })
-    .catch((error) => {
-      console.error(
-        "There has been a problem with your fetch operation:",
-        error
-      );
+async function logout() {
+  try {
+    const response = await fetchWithAuthCheck("auth/logout", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({
+        currentUser,
+      }),
     });
+
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+    const data = await response.json();
+
+    localStorage.removeItem("token");
+    window.location.href = data.redirectUrl;
+    isAuth = false;
+  } catch (error) {
+    console.log(error.message);
+  }
 }
 
-function getUsersList() {
-  fetch("/users_list", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      return response.json();
-    })
-    .then((usersData) => {
-      const usersList = document.getElementById("all_users");
-      usersList.innerHTML = "";
-      let isFirstUser = true; // Добавлен флаг для определения первого пользователя
-
-      for (const data of usersData) {
-        const userElement = document.createElement("li");
-        const areWeAUser = data.username === currentUser;
-
-        userElement.textContent = data.username;
-        userElement.className = areWeAUser ? "we-are-the-user" : "";
-        userElement.classList.add("user");
-
-        userElement.addEventListener("click", function () {
-          selectedUser = data.username;
-
-          document
-            .querySelectorAll(".user")
-            .forEach((item) => item.classList.remove("selected"));
-          this.classList.add("selected");
-          fetchMessageHistory();
-        });
-
-        usersList.appendChild(userElement);
-
-        // Устанавливаем selectedUser равной первому пользователю и обновляем интерфейс
-        if (isFirstUser && !areWeAUser) {
-          selectedUser = data.username;
-          isFirstUser = false; // Сбрасываем флаг, так как первый пользователь уже обработан
-          userElement.classList.add("selected"); // Отмечаем первого пользователя как выбранного в UI
-          fetchMessageHistory(); // Вызываем функцию для загрузки истории сообщений с первым пользователем
-        }
-      }
-    })
-    .catch((error) => {
-      console.error(
-        "There has been a problem with your fetch operation:",
-        error
-      );
+async function fetchMessageHistory() {
+  try {
+    const response = await fetchWithAuthCheck("/auth/history", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({
+        to: selectedUser,
+        sender: currentUser,
+      }),
     });
+
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+
+    const messagesData = await response.json();
+    const messagesList = document.querySelector(".messages");
+    messagesList.innerHTML = "";
+
+    for (const data of messagesData) {
+      const isSender = data.sender === currentUser;
+      const messageLi = document.createElement("li");
+      messageLi.className = `message ${isSender ? "sender" : "receiver"}`;
+
+      messageLi.innerHTML = `
+        <div class="u-image">
+        <img src="${
+          isSender
+            ? "./assets/images/our-user-img.png"
+            : "./assets/images/user-img.png"
+        }" alt="" />
+        </div>
+        <div class="message-box">
+          <p>${data.message}</p>
+        </div>`;
+
+      messagesList.appendChild(messageLi);
+    }
+    scrollToBottom(messagesList);
+  } catch (error) {
+    console.error("There has been a problem with your fetch operation:", error);
+  }
+}
+
+async function getUsersList() {
+  try {
+    const response = await fetchWithAuthCheck("/auth/users", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+    const usersData = await response.json();
+
+    const usersList = document.querySelector(".chats-list");
+    const ourUserName = document.querySelector(".our-user-name");
+    const ourUserEmail = document.querySelector(".our-user-email");
+    const selectedUsername = document.querySelector(".selected-user-name");
+
+    usersList.innerHTML = "";
+    let isFirstUser = true;
+
+    for (const data of usersData) {
+      const areWeAUser = data.username === currentUser;
+      const userLi = document.createElement("li");
+
+      ourUserName.textContent = currentUser;
+      ourUserEmail.textContent = currentEmail;
+
+      userLi.className = `user ${areWeAUser ? "weAreUser" : ""}`;
+      userLi.innerHTML = `
+        <div class="user-image">
+          <img src="./assets/images/user-img.png" alt="" />
+        </div>
+        <div class="user-information">
+          <h3 class="user-name">${data.username}</h3>
+          <h4 class="user-email">${data.email}</h4>
+        </div>
+        <div class="bell">
+          <img src="./assets/images/bell.png" alt="" />
+        </div>
+      `;
+
+      usersList.appendChild(userLi);
+
+      userLi.addEventListener("click", function () {
+        selectedUser = data.username;
+
+        document
+          .querySelectorAll(".user")
+          .forEach((item) => item.classList.remove("selected"));
+        this.classList.add("selected");
+        selectedUsername.textContent = selectedUser;
+        fetchMessageHistory();
+      });
+
+      if (isFirstUser && !areWeAUser) {
+        selectedUser = data.username;
+        isFirstUser = false;
+        userLi.classList.add("selected");
+        selectedUsername.textContent = selectedUser;
+        fetchMessageHistory();
+      }
+    }
+  } catch (error) {
+    console.error("There has been a problem with your fetch operation:", error);
+  }
 }
 
 function register() {
-  const username = document.getElementById("username_reg").value;
-  const h2 = document.getElementById("status");
+  const email = document.getElementById("registration_email_input").value;
+  const username = document.getElementById("registration_username_input").value;
+  const password = document.getElementById("registration_password_input").value;
+  const emailHelper = document.querySelector(".email-helper");
+  const usernameHelper = document.querySelector(".username-helper");
+  const passwordHelper = document.querySelector(".password-helper");
 
-  fetch("/register", {
+  fetch("/auth/registration", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ username }),
+    body: JSON.stringify({ email, username, password }),
   })
-    .then((response) => response.text())
+    .then((response) => response.json())
     .then((data) => {
-      h2.textContent = data;
+      if (data.errors) {
+        const messages = data.errors.map((error) => error.msg).join(", ");
+        emailHelper.textContent = messages;
+        document.getElementById("registration_username_input").value = "";
+        document.getElementById("registration_password_input").value = "";
+      } else {
+        emailHelper.textContent = data;
+        document.getElementById("registration_username_input").value = "";
+        document.getElementById("registration_password_input").value = "";
+      }
     })
     .catch((error) => console.log(error));
 }
 
 function login() {
-  const username = document.getElementById("username_log").value;
-  const usersList = document.getElementById("users_section");
-  const loginSection = document.getElementById("login_ection");
-  const messageSection = document.getElementById("message_section");
-  const h2 = document.getElementById("status");
+  const username = document.getElementById("login_username_input").value;
+  const password = document.getElementById("login_password_input").value;
+  const usernameStatus = document.getElementById("login_username_status");
+  const passwordStatus = document.getElementById("login_password_status");
 
-  fetch("/login", {
+  fetch("/auth/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ username }),
+    body: JSON.stringify({ username, password }),
   })
-    .then((response) => {
-      if (!response.ok) {
-        h2.textContent = "User not found or already in use.";
-      }
-      return response.json();
-    })
+    .then((response) => response.json())
     .then((data) => {
-      h2.textContent = `Welcome, ${username}!`;
-      currentUser = username;
-      loginSection.classList.add("hidden");
-      messageSection.classList.remove("hidden");
-      usersList.classList.remove("hidden");
-      getUsersList();
+      if (data.errors || data.message) {
+        const messages =
+          data.errors.map((error) => error.msg).join(", ") || data.message;
+        usernameStatus.textContent = messages;
+      } else {
+        if (data.error) {
+          usernameStatus.textContent = data.error;
+        } else {
+          currentUser = username;
+          isAuth = true;
+          localStorage.setItem("token", data.userData.accessToken);
+          checkAuth();
+          window.location.href = data.redirectUrl;
+        }
+      }
     })
     .catch((error) => {
       console.error("Login Error:", error);
@@ -186,8 +392,8 @@ function login() {
 }
 
 function sendMessage() {
-  const messageInput = document.getElementById("message");
-  if (currentUser.length && messageInput.value.length) {
+  const messageInput = document.getElementById("msg-input");
+  if (currentUser && messageInput.value) {
     const messageData = {
       to: selectedUser,
       sender: currentUser,

@@ -1,0 +1,64 @@
+/* .page-changing-blob {
+  display: none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
+  width: 200%;
+  height: 200%;
+  border-radius: 100%;
+  background-color: var(--second-bg-color);
+  z-index: 1000;
+} */
+
+.page-fade-in_right {
+  animation: page-fade-in_right 1s cubic-bezier(0.71, -0.02, 0.19, 0.84);
+}
+
+.page-fade-out_right {
+  animation: page-fade-out_right 1s cubic-bezier(0.71, -0.02, 0.19, 0.84);
+}
+
+.page-fade-in_left {
+  animation: page-fade-in_left 1s cubic-bezier(0.71, -0.02, 0.19, 0.84);
+}
+
+.page-fade-out_left {
+  animation: page-fade-out_left 1s cubic-bezier(0.71, -0.02, 0.19, 0.84);
+}
+
+@keyframes page-fade-in_right {
+  from {
+    left: -100%;
+  }
+  to {
+    left: 0;
+  }
+}
+
+@keyframes page-fade-out_right {
+  from {
+    left: 0;
+  }
+  to {
+    left: -100%;
+  }
+}
+
+@keyframes page-fade-in_left {
+  from {
+    left: 100%;
+  }
+  to {
+    left: 0;
+  }
+}
+
+@keyframes page-fade-out_left {
+  from {
+    left: 0;
+  }
+  to {
+    left: 100%;
+  }
+}

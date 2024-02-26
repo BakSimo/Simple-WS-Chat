@@ -37,10 +37,10 @@ h1 {
   }
 }
 
-h1 span {
+/* h1 span {
   font-size: 60px;
   animation: pointColorChange 2.3s infinite;
-}
+} */
 
 h2 {
   font-size: 28px;
@@ -178,7 +178,7 @@ li p {
 
 #users_section {
   width: 20%;
-  height: 470px;
+  height: 568px;
   margin: 0 20px;
   overflow: auto;
 }

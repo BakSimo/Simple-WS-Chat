@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Talk - Chat</title>
+    <link rel="stylesheet" href="./styles/chat.css" />
+    <link rel="stylesheet" href="./styles/footer.css" />
+    <link rel="stylesheet" href="./styles/main.css" />
+    <link rel="stylesheet" href="./styles/media/chat_media.css" />
+    <link rel="icon" href="./assets/images/talk-ico.png" type="image/x-icon" />
+    <link
+      rel="shortcut icon"
+      href="./assets/img/icons/icon-prototype.ico"
+      type="image/x-icon"
+    />
+  </head>
+  <body>
+    <main class="chat-page page">
+      <section class="chats-sidebar">
+        <header class="chats-sidebar-header">
+          <div class="our-user-image">
+            <form id="uploadForm">
+              <label htmlFor="file_upload">
+                <img src="./assets/images/our-user-img.png" alt="" />
+              </label>
+              <input
+                type="file"
+                name="imageFile"
+                id="file_upload"
+                accept=".jpeg, .png, jpg"
+              />
+              <button type="submit">Submit</button>
+            </form>
+          </div>
+          <div class="our-user-information">
+            <h3 class="our-user-name"></h3>
+            <h4 class="our-user-email"></h4>
+          </div>
+          <div class="brg-menu" onclick="toggleMenu()">
+            <svg
+              fill="#f1e8f4"
+              version="1.1"
+              id="Layer_1"
+              xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              width="175px"
+              height="175px"
+              viewBox="0 0 100.00 100.00"
+              enable-background="new 0 0 100 100"
+              xml:space="preserve"
+              stroke="#f1e8f4"
+              stroke-width="2.5"
+            >
+              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+              <g
+                id="SVGRepo_tracerCarrier"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></g>
+              <g id="SVGRepo_iconCarrier">
+                <g>
+                  <path
+                    d="M33.934,54.458l30.822,27.938c0.383,0.348,0.864,0.519,1.344,0.519c0.545,0,1.087-0.222,1.482-0.657 c0.741-0.818,0.68-2.083-0.139-2.824L37.801,52.564L64.67,22.921c0.742-0.818,0.68-2.083-0.139-2.824 c-0.817-0.742-2.082-0.679-2.824,0.139L33.768,51.059c-0.439,0.485-0.59,1.126-0.475,1.723 C33.234,53.39,33.446,54.017,33.934,54.458z"
+                  ></path>
+                </g>
+              </g>
+            </svg>
+          </div>
+        </header>
+        <div class="all-chats">
+          <ul class="chats-list"></ul>
+        </div>
+        <footer class="chat-footer footer">
+          <div class="footer-information">
+            <div class="footer-logo-box">
+              <img src="./assets/images/talk-logo_black_3.png" alt="" />
+            </div>
+            <div class="footer-text"><h5>2024 TALK, Inc.</h5></div>
+          </div>
+          <div class="footer-logout">
+            <div class="logout-btn" onclick="logout()">
+              <svg
+                width="100px"
+                height="100px"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                stroke="#000000"
+                stroke-width="0.00024000000000000003"
+                transform="rotate(180)"
+              >
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></g>
+                <g id="SVGRepo_iconCarrier">
+                  <path
+                    d="M17.2929 14.2929C16.9024 14.6834 16.9024 15.3166 17.2929 15.7071C17.6834 16.0976 18.3166 16.0976 18.7071 15.7071L21.6201 12.7941C21.6351 12.7791 21.6497 12.7637 21.6637 12.748C21.87 12.5648 22 12.2976 22 12C22 11.7024 21.87 11.4352 21.6637 11.252C21.6497 11.2363 21.6351 11.2209 21.6201 11.2059L18.7071 8.29289C18.3166 7.90237 17.6834 7.90237 17.2929 8.29289C16.9024 8.68342 16.9024 9.31658 17.2929 9.70711L18.5858 11H13C12.4477 11 12 11.4477 12 12C12 12.5523 12.4477 13 13 13H18.5858L17.2929 14.2929Z"
+                    fill="#f8f2f2"
+                  ></path>
+                  <path
+                    d="M5 2C3.34315 2 2 3.34315 2 5V19C2 20.6569 3.34315 22 5 22H14.5C15.8807 22 17 20.8807 17 19.5V16.7326C16.8519 16.647 16.7125 16.5409 16.5858 16.4142C15.9314 15.7598 15.8253 14.7649 16.2674 14H13C11.8954 14 11 13.1046 11 12C11 10.8954 11.8954 10 13 10H16.2674C15.8253 9.23514 15.9314 8.24015 16.5858 7.58579C16.7125 7.4591 16.8519 7.35296 17 7.26738V4.5C17 3.11929 15.8807 2 14.5 2H5Z"
+                    fill="#ff0066"
+                  ></path>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </footer>
+        <div class="back-btn" onclick="toggleMenu()">
+          <svg
+            fill="#ff0066"
+            version="1.1"
+            id="Layer_1"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            viewBox="0 0 100 100"
+            enable-background="new 0 0 100 100"
+            xml:space="preserve"
+            stroke="#ff0066"
+            stroke-width="6.2"
+            transform="rotate(180)"
+          >
+            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+            <g
+              id="SVGRepo_tracerCarrier"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></g>
+            <g id="SVGRepo_iconCarrier">
+              <g>
+                <path
+                  d="M33.934,54.458l30.822,27.938c0.383,0.348,0.864,0.519,1.344,0.519c0.545,0,1.087-0.222,1.482-0.657 c0.741-0.818,0.68-2.083-0.139-2.824L37.801,52.564L64.67,22.921c0.742-0.818,0.68-2.083-0.139-2.824 c-0.817-0.742-2.082-0.679-2.824,0.139L33.768,51.059c-0.439,0.485-0.59,1.126-0.475,1.723 C33.234,53.39,33.446,54.017,33.934,54.458z"
+                ></path>
+              </g>
+            </g>
+          </svg>
+        </div>
+      </section>
+      <section class="chat-container">
+        <header class="chat-header">
+          <div class="header-inf">
+            <div class="selected-user-image">
+              <img src="./assets/images/user-img.png" alt="" />
+            </div>
+            <div class="selected-user-information">
+              <h3 class="selected-user-name"></h3>
+              <span class="selected-user-status"></span>
+            </div>
+            <div class="logo-box">
+              <img src="./assets/images/talk-logo_2.png" alt="" />
+            </div>
+          </div>
+        </header>
+        <div class="chat">
+          <ul class="messages"></ul>
+          <div class="message-input-container">
+            <input type="text" id="msg-input" placeholder="Type a message..." />
+            <button class="msg-button" onclick="sendMessage()">
+              <img src="./assets/images/air-sender_3.png" alt="" />
+            </button>
+          </div>
+          <div class="circles">
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+            <div class="circle"></div>
+          </div>
+        </div>
+      </section>
+      <script src="./js/sidebarToggle.js"></script>
+      <script src="./client.js"></script>
+    </main>
+  </body>
+</html>

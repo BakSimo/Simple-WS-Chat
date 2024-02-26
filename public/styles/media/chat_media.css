@@ -1,0 +1,70 @@
+/* MEDIA WIDTH */
+
+@media (max-width: 1024px) {
+}
+
+@media (max-width: 867px) {
+  .chats-sidebar {
+    width: 100%;
+  }
+
+  .chats-sidebar.active {
+    left: -100%;
+  }
+
+  .chats-list .user,
+  .chats-sidebar-header {
+    padding: 10px 15px;
+  }
+
+  .chat-container {
+    width: 100%;
+  }
+
+  .chat-header {
+    padding: 10px 20px;
+  }
+
+  .chat-container .chat {
+    padding: 0 20px 20px 20px;
+  }
+
+  .header-inf.active {
+    padding: 0 10px;
+  }
+
+  .messages::-webkit-scrollbar {
+    display: none;
+  }
+
+  .messages .message {
+    max-width: 285px;
+  }
+
+  .back-btn svg,
+  .brg-menu svg {
+    width: 35px;
+    height: 35px;
+  }
+
+  .chat-footer{
+    padding: 10px 15px !important;
+  }
+}
+
+@media (max-width: 767px) {
+}
+
+@media (max-width: 467px) {
+}
+
+@media (max-width: 367px) {
+}
+
+/* MEDIA HEIGHT */
+
+@media (max-height: 431px) {
+}
+
+@media (max-height: 377px) {
+}

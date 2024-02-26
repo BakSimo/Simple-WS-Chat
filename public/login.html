@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Talk - Sign In</title>
+    <link rel="stylesheet" href="./styles/login.css" />
+    <link rel="stylesheet" href="./styles/main.css" />
+    <link rel="stylesheet" href="./styles/footer.css" />
+    <link rel="stylesheet" href="./styles/page-changing_anim.css" />
+    <link rel="stylesheet" href="./styles/media/login_media.css" />
+    <link rel="icon" href="./assets/images/talk-ico.png" type="image/x-icon" />
+    <link
+      rel="shortcut icon"
+      href="./assets/img/icons/icon-prototype.ico"
+      type="image/x-icon"
+    />
+  </head>
+  <body>
+    <div class="falling-container">
+      <div class="falling-logo">
+        <img src="./assets/images/talk-logo_2.png" alt="" />
+      </div>
+    </div>
+    <main class="login-page page">
+      <header class="login-page-header">
+        <div class="logo-box">
+          <img src="./assets/images/talk-logo_2.png" alt="" />
+        </div>
+      </header>
+      <section class="page-main-banner-container">
+        <div class="image-box">
+          <svg
+            style="position: absolute; top: -35px; left: -25px"
+            viewBox="0 0 200 200"
+            xmlns="http://222.23.org/2000/svg"
+          >
+            <path
+              fill="#ff0066"
+              d="M31.7,-42.9C46.5,-39.7,67.9,-40.2,72.1,-32.5C76.2,-24.7,63.3,-8.8,55,3.8C46.8,16.3,43.2,25.3,38.2,35.5C33.1,45.7,26.6,57,15.5,66.5C4.4,76.1,-11.3,83.9,-19.4,76.7C-27.5,69.4,-28.2,47.2,-32,33.1C-35.9,19,-43.1,13.1,-49.6,3.8C-56,-5.5,-61.8,-18.1,-60.3,-30.1C-58.8,-42,-50.1,-53.2,-38.8,-58C-27.6,-62.8,-13.8,-61.3,-2.7,-57.1C8.4,-52.9,16.8,-46.1,31.7,-42.9Z"
+              Transform="translate(100 100)"
+            />
+          </svg>
+          <img
+            src="./assets/images/talk_banner-prototype_3.png"
+            id="talk_banner_img"
+            alt=""
+          />
+          <img
+            src="./assets/images/emogi_banner-prototype.png"
+            id="emg_banner_img"
+            alt=""
+          />
+        </div>
+      </section>
+      <section class="login-container" id="animate">
+        <div class="fake-side"></div>
+        <div class="login-box">
+          <h2>Sign in</h2>
+          <form action="" class="login-form">
+            <div class="login-username-input">
+              <label for="login_username_input">Login</label>
+              <input
+                type="text"
+                id="login_username_input"
+                placeholder="Username"
+                maxlength="60"
+              />
+              <h6 id="login_username_status">Enter your username</h6>
+            </div>
+            <div class="login-password-input">
+              <label for="login_password_input">Password</label>
+              <input
+                type="password"
+                id="login_password_input"
+                placeholder="Password"
+                maxlength="50"
+              />
+              <h6 id="login_password_status">Enter your password</h6>
+            </div>
+            <div class="login-button" onclick="login()">Sign in</div>
+          </form>
+          <div class="login-links">
+            <h6><a href="./register.html">Create account</a></h6>
+            <h6><a href="">Forget password?</a></h6>
+          </div>
+        </div>
+        <div class="mobile-circles">
+          <div class="mobile-circle"></div>
+          <div class="mobile-circle"></div>
+          <div class="mobile-circle"></div>
+          <div class="mobile-circle"></div>
+          <div class="mobile-circle"></div>
+          <div class="mobile-circle"></div>
+          <div class="mobile-circle"></div>
+          <div class="mobile-circle"></div>
+          <div class="mobile-circle"></div>
+          <div class="mobile-circle"></div>
+        </div>
+        <footer class="login-footer footer">
+          <div class="footer-information">
+            <div class="footer-logo-box">
+              <img src="./assets/images/talk-logo_black_3.png" alt="" />
+            </div>
+            <div class="footer-text"><h5>2024 TALK, Inc.</h5></div>
+          </div>
+        </footer>
+      </section>
+      <div class="circles">
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+      </div>
+    </main>
+    <script src="./js/animation/loginAnimations.js"></script>
+    <script src="./js/animation/pageChangeAnimation.js"></script>
+    <script src="./client.js"></script>
+  </body>
+</html>

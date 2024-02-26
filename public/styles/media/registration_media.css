@@ -1,0 +1,230 @@
+/* MEDIA WIDTH */
+
+@media (max-width: 1024px) {
+  .registration-footer,
+  .registration-page-header {
+    padding: 10px 15px;
+    height: 60px;
+  }
+
+  .registration-page-header .logo-box {
+    width: 60px;
+    height: 60px;
+  }
+
+  .registration-container {
+    padding: 10px 15px;
+    min-width: 390px;
+  }
+
+  .page-main-banner-container .image-box {
+    min-width: 476px;
+  }
+
+  .image-box #emg_banner_img {
+    width: 130px;
+    top: 130px;
+    right: 35px;
+  }
+
+  .image-box #reg_laptop_banner_img {
+    top: 60px;
+    left: 30px;
+    width: 370px;
+  }
+}
+
+@media (max-width: 867px) {
+}
+
+@media (max-width: 767px) {
+  .registration-page-header .logo-box {
+    margin-left: auto;
+    margin-right: 0;
+  }
+
+  .registration-box h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 38px;
+  }
+
+  .registration-page {
+    box-shadow: none;
+    display: block;
+    background-color: var(--bg-color);
+  }
+
+  .circles,
+  .registration-container .fake-side,
+  .page-main-banner-container {
+    display: none;
+  }
+
+  .mobile-circles {
+    display: block;
+  }
+
+  .registration-container {
+    box-shadow: none;
+    justify-content: center;
+    width: 100%;
+    min-width: 300px;
+    display: flex;
+    align-items: center;
+  }
+
+  .registration-box {
+    width: 80% !important;
+  }
+
+  .mobile-circles .mobile-circle {
+    animation: mobileCirclesAnimation 25s linear infinite;
+  }
+
+  .falling-container {
+    top: 50%;
+    transform: translateY(-50%);
+    animation: fallingLogoAnimation 1.7s cubic-bezier(0.24, 0.11, 0.28, 0.98);
+  }
+
+  .shaking {
+    animation: shakingLogoAnimation 0.2s cubic-bezier(0.24, 0.11, 0.28, 0.98);
+  }
+
+  .up {
+    animation: upLogoAnimation 1.7s cubic-bezier(1, 0.1, 0.36, 1);
+  }
+}
+
+@media (max-width: 467px) {
+  .registration-box {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 367px) {
+  .registration-container {
+    min-width: 265px;
+  }
+}
+
+/* MEDIA HEIGHT */
+
+@media (max-height: 437px) {
+  .registration-footer {
+    padding: 5px 15px;
+    height: 45px;
+  }
+
+  .footer-logo-box {
+    width: 30px;
+    height: 30px;
+  }
+
+  .footer-text h5 {
+    font-size: 12px;
+  }
+
+  .reg-mobile-box {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .input-helper {
+    margin-bottom: 9px;
+  }
+
+  .registration-email-input,
+  .registration-username-input {
+    width: 48%;
+  }
+
+  .registration-page-header .logo-box {
+    margin-left: auto;
+    margin-right: 0;
+  }
+
+  .registration-form {
+    margin: 0;
+  }
+
+  /* .registration-links {
+    justify-content: space-between;
+  } */
+
+  .registration-box {
+    margin-bottom: 50px;
+  }
+
+  .registration-box h2 {
+    text-align: center;
+    margin-bottom: 9px;
+    font-size: 38px;
+  }
+
+  .registration-page {
+    box-shadow: none;
+    display: block;
+    background-color: var(--bg-color);
+  }
+
+  .circles,
+  .registration-container .fake-side,
+  .page-main-banner-container {
+    display: none;
+  }
+
+  .mobile-circles {
+    display: block;
+  }
+
+  .registration-container {
+    box-shadow: none;
+    justify-content: center;
+    width: 100%;
+    display: flex;
+    align-items: center;
+  }
+
+  .registration-box {
+    width: 80% !important;
+  }
+
+  .mobile-circles .mobile-circle {
+    animation: mobileCirclesAnimation 25s linear infinite;
+  }
+
+  .falling-container {
+    top: 50%;
+    transform: translateY(-50%);
+    animation: fallingLogoAnimation 1.7s cubic-bezier(0.24, 0.11, 0.28, 0.98);
+  }
+
+  .shaking {
+    animation: shakingLogoAnimation 0.2s cubic-bezier(0.24, 0.11, 0.28, 0.98);
+  }
+
+  .up {
+    animation: upLogoAnimation 1.7s cubic-bezier(1, 0.1, 0.36, 1);
+  }
+}
+
+@media (max-height: 377px) {
+  label {
+    font-size: 14px;
+  }
+
+  input[type="password"],
+  input[type="text"] {
+    padding: 7px 10px;
+  }
+
+  .input-helper {
+    font-size: 11px;
+  }
+
+  .registration-button {
+    margin: 0 0 5px 0;
+  }
+}
