@@ -55,7 +55,7 @@ async function checkAuth() {
       currentUser = data.user;
       currentUsername = data.user.username;
       currentEmail = data.user.email;
-      await getUserImage(currentUser);
+      // await getUserImage(currentUser);
       await getOurUser(currentUsername);
     }
   } catch (error) {
@@ -118,54 +118,51 @@ if (window.location.pathname === "/chat") {
     }, 2000);
   });
 
-  // document.getElementById("uploadForm").addEventListener("submit", function (e) {
-  //   e.preventDefault();
-  
-  //   const formData = new FormData();
-  //   const imageInput = document.getElementById("file_upload");
-  
-  //   if (imageInput.files.length > 0) {
-  //     formData.append("image", imageInput.files[0]);
-  //     formData.append("currentUser", JSON.stringify(currentUsername));
-  
-  //     fetch("auth/upload", {
-  //       method: "POST",
-  //       credentials: "include",
-  //       headers: {
-  //         Authorization: `Bearer ${localStorage.getItem("token")}`,
-  //       },
-  //       body: formData,
-  //     })
-  //       .then((response) => response.json())
-  //       .then((data) => {
-  //         currentUser = data;
-  //         getUserImage(currentUser);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error:", error);
-  //       });
-  //   }
-  // });
+  document.querySelector('.our-user-image img').addEventListener('click', function() {
+    document.getElementById('file_upload').click();
+});
+
+document.getElementById('file_upload').addEventListener('change', function() {
+    if (this.files.length > 0) {
+        const formData = new FormData();
+        formData.append("image", this.files[0]);
+        formData.append("currentUser", JSON.stringify(currentUsername));
+
+        fetch("auth/upload", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            currentUser = data;
+            getUserImage(currentUser);
+            getOurUser(currentUser.username);
+        })
+        .catch(error => {
+            console.error("Error:", error);
+        });
+    }
+});
+
 }
 
 async function getUserImage(user) {
-
-  const baseUrl = "http://localhost:3000/"; // Замените на ваш базовый URL
-  const imageUrl = `auth/image/${user.image}`;
-  const fullUrl = baseUrl + imageUrl;
-
-  const response = await fetch(fullUrl, {
+  const response = await fetchWithAuthCheck(`auth/image/${user.image}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
   });
+  debugger
   if (!response.ok) {
     throw new Error("Network response was not ok");
   }
   const data = await response.json();
-  debugger
   return { user: user, image: data.image };
 }
 
@@ -317,7 +314,7 @@ async function getUsersList() {
         userLi.className = `user ${areWeAUser ? "weAreUser" : ""}`;
         userLi.innerHTML = `
           <div class="user-image">
-            <img src="${userData.image} alt="" />
+            <img src="${userData.image}" alt="" />
           </div>
           <div class="user-information">
             <h3 class="user-name">${data.username}</h3>
@@ -327,9 +324,7 @@ async function getUsersList() {
             <img src="./assets/images/bell.png" alt="" />
           </div>
         `;
-  
         usersList.appendChild(userLi);
-  
         userLi.addEventListener("click", function () {
           selectedUser = data.username;
   

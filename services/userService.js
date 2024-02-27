@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const uuid = require("uuid");
 const mailService = require("../services/mailService");
 const tokenService = require("../services/tokenService");
+const imageService = require("../services/imageService");
 const UserDto = require("../dtos/userDto");
 const { API_URL } = require("../config");
 const apiError = require("../exceptions/apiErroe");
@@ -22,11 +23,13 @@ class UserService {
     }
     const heshPassword = await bcrypt.hash(password, 7);
     const activationLink = uuid.v4();
+    const defaultImageId = await imageService.ensureDefaultImageExists();
     const user = await User.create({
       email,
       username,
       password: heshPassword,
       activationLink,
+      image: defaultImageId,
     });
     await mailService.sendActivationMail(
       email,
