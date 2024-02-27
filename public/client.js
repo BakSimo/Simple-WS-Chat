@@ -3,8 +3,10 @@ const ws = new WebSocket("ws://localhost:3000");
 const messageInput = document.getElementById("msg-input");
 const typingIndicator = document.querySelector(".selected-user-status");
 let typingTimeout;
+
 let currentUser = null;
-let currentUEmail = null;
+let currentUsername = null;
+let currentEmail = null;
 let selectedUser = null;
 let isAuth = false;
 let isLoading = false;
@@ -50,10 +52,11 @@ async function checkAuth() {
     if (data.accessToken) {
       localStorage.setItem("token", data.accessToken);
       isAuth = true;
-      currentUser = data.user.username;
+      currentUser = data.user;
+      currentUsername = data.user.username;
       currentEmail = data.user.email;
-    } else {
-      // Обработка ошибки аутентификации, например, переадресация на страницу входа
+      await getUserImage(currentUser);
+      await getOurUser(currentUsername);
     }
   } catch (error) {
     console.log(error);
@@ -61,60 +64,6 @@ async function checkAuth() {
     isLoading = false;
   }
 }
-
-document.getElementById("uploadForm").addEventListener("submit", function (e) {
-  e.preventDefault();
-
-  const formData = new FormData();
-  const imageInput = document.getElementById("file_upload");
-
-  if (imageInput.files.length > 0) {
-    formData.append("image", imageInput.files[0]);
-    formData.append("currentUser", JSON.stringify(currentUser));
-
-    fetch("auth/upload", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: formData,
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Success:", data);
-        fetchImages(); // После загрузки обновить список изображений
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  }
-});
-
-ws.onmessage = function (event) {
-  const data = JSON.parse(event.data);
-
-  if (data.sender === selectedUser || data.sender === currentUser) {
-    const messagesList = document.querySelector(".messages");
-    const isSender = data.sender === currentUser;
-    const messageLi = document.createElement("li");
-    messageLi.className = `message ${isSender ? "sender" : "receiver"}`;
-    messageLi.innerHTML = `
-    <div class="u-image">
-      <img src="${
-        isSender
-          ? "./assets/images/our-user-img.png"
-          : "./assets/images/user-img.png"
-      }" alt="" />
-    </div>
-    <div class="message-box">
-      <p>${data.message}</p>
-    </div>`;
-
-    messagesList.appendChild(messageLi);
-    scrollToBottom(messagesList);
-  }
-};
 
 ws.onmessage = function (event) {
   let data;
@@ -136,9 +85,9 @@ ws.onmessage = function (event) {
   } else {
     const data = JSON.parse(event.data);
 
-    if (data.sender === selectedUser || data.sender === currentUser) {
+    if (data.sender === selectedUser || data.sender === currentUsername) {
       const messagesList = document.querySelector(".messages");
-      const isSender = data.sender === currentUser;
+      const isSender = data.sender === currentUsername;
       const messageLi = document.createElement("li");
       messageLi.className = `message ${isSender ? "sender" : "receiver"}`;
       messageLi.innerHTML = `
@@ -161,14 +110,65 @@ ws.onmessage = function (event) {
 
 if (window.location.pathname === "/chat") {
   messageInput.addEventListener("input", () => {
-    sendTypingNotification(currentUser, selectedUser);
+    sendTypingNotification(currentUsername, selectedUser);
 
     clearTimeout(typingTimeout);
     typingTimeout = setTimeout(() => {
       typingIndicator.textContent = "";
     }, 2000);
   });
+
+  // document.getElementById("uploadForm").addEventListener("submit", function (e) {
+  //   e.preventDefault();
+  
+  //   const formData = new FormData();
+  //   const imageInput = document.getElementById("file_upload");
+  
+  //   if (imageInput.files.length > 0) {
+  //     formData.append("image", imageInput.files[0]);
+  //     formData.append("currentUser", JSON.stringify(currentUsername));
+  
+  //     fetch("auth/upload", {
+  //       method: "POST",
+  //       credentials: "include",
+  //       headers: {
+  //         Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //       },
+  //       body: formData,
+  //     })
+  //       .then((response) => response.json())
+  //       .then((data) => {
+  //         currentUser = data;
+  //         getUserImage(currentUser);
+  //       })
+  //       .catch((error) => {
+  //         console.error("Error:", error);
+  //       });
+  //   }
+  // });
 }
+
+async function getUserImage(user) {
+
+  const baseUrl = "http://localhost:3000/"; // Замените на ваш базовый URL
+  const imageUrl = `auth/image/${user.image}`;
+  const fullUrl = baseUrl + imageUrl;
+
+  const response = await fetch(fullUrl, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  if (!response.ok) {
+    throw new Error("Network response was not ok");
+  }
+  const data = await response.json();
+  debugger
+  return { user: user, image: data.image };
+}
+
 
 function sendTypingNotification(senderName, receiverName) {
   if (ws.readyState === WebSocket.OPEN) {
@@ -191,7 +191,7 @@ async function logout() {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
       body: JSON.stringify({
-        currentUser,
+        currentUser: currentUsername,
       }),
     });
 
@@ -218,7 +218,7 @@ async function fetchMessageHistory() {
       },
       body: JSON.stringify({
         to: selectedUser,
-        sender: currentUser,
+        sender: currentUsername,
       }),
     });
 
@@ -231,7 +231,7 @@ async function fetchMessageHistory() {
     messagesList.innerHTML = "";
 
     for (const data of messagesData) {
-      const isSender = data.sender === currentUser;
+      const isSender = data.sender === currentUsername;
       const messageLi = document.createElement("li");
       messageLi.className = `message ${isSender ? "sender" : "receiver"}`;
 
@@ -255,6 +255,37 @@ async function fetchMessageHistory() {
   }
 }
 
+async function getOurUser(username) {
+  try {
+    const response = await fetchWithAuthCheck("/auth/user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({username: username}),
+    });
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+    const data = await response.json();
+
+    const ourUserImage = document.querySelector(".our-user-image");
+    const image = ourUserImage.querySelector("img");
+    const ourUserName = document.querySelector(".our-user-name");
+    const ourUserEmail = document.querySelector(".our-user-email");
+
+    const userData = await getUserImage(data);
+    image.src = userData.image;
+    ourUserName.textContent = currentUsername;
+    ourUserEmail.textContent = currentEmail;
+      
+    }
+   catch (error) {
+    console.error("There has been a problem with your fetch operation:", error);
+  }
+}
+
 async function getUsersList() {
   try {
     const response = await fetchWithAuthCheck("/auth/users", {
@@ -270,55 +301,55 @@ async function getUsersList() {
     const usersData = await response.json();
 
     const usersList = document.querySelector(".chats-list");
-    const ourUserName = document.querySelector(".our-user-name");
-    const ourUserEmail = document.querySelector(".our-user-email");
     const selectedUsername = document.querySelector(".selected-user-name");
 
     usersList.innerHTML = "";
     let isFirstUser = true;
 
     for (const data of usersData) {
-      const areWeAUser = data.username === currentUser;
-      const userLi = document.createElement("li");
-
-      ourUserName.textContent = currentUser;
-      ourUserEmail.textContent = currentEmail;
-
-      userLi.className = `user ${areWeAUser ? "weAreUser" : ""}`;
-      userLi.innerHTML = `
-        <div class="user-image">
-          <img src="./assets/images/user-img.png" alt="" />
-        </div>
-        <div class="user-information">
-          <h3 class="user-name">${data.username}</h3>
-          <h4 class="user-email">${data.email}</h4>
-        </div>
-        <div class="bell">
-          <img src="./assets/images/bell.png" alt="" />
-        </div>
-      `;
-
-      usersList.appendChild(userLi);
-
-      userLi.addEventListener("click", function () {
-        selectedUser = data.username;
-
-        document
-          .querySelectorAll(".user")
-          .forEach((item) => item.classList.remove("selected"));
-        this.classList.add("selected");
-        selectedUsername.textContent = selectedUser;
-        fetchMessageHistory();
-      });
-
-      if (isFirstUser && !areWeAUser) {
-        selectedUser = data.username;
-        isFirstUser = false;
-        userLi.classList.add("selected");
-        selectedUsername.textContent = selectedUser;
-        fetchMessageHistory();
+      if (data.username === currentUsername) {
+        continue;
+      }else{
+        const userData = await getUserImage(data);
+        const areWeAUser = data.username === currentUsername;
+        const userLi = document.createElement("li");
+  
+        userLi.className = `user ${areWeAUser ? "weAreUser" : ""}`;
+        userLi.innerHTML = `
+          <div class="user-image">
+            <img src="${userData.image} alt="" />
+          </div>
+          <div class="user-information">
+            <h3 class="user-name">${data.username}</h3>
+            <h4 class="user-email">${data.email}</h4>
+          </div>
+          <div class="bell">
+            <img src="./assets/images/bell.png" alt="" />
+          </div>
+        `;
+  
+        usersList.appendChild(userLi);
+  
+        userLi.addEventListener("click", function () {
+          selectedUser = data.username;
+  
+          document
+            .querySelectorAll(".user")
+            .forEach((item) => item.classList.remove("selected"));
+          this.classList.add("selected");
+          selectedUsername.textContent = selectedUser;
+          fetchMessageHistory();
+        });
+  
+        if (isFirstUser && !areWeAUser) {
+          selectedUser = data.username;
+          isFirstUser = false;
+          userLi.classList.add("selected");
+          selectedUsername.textContent = selectedUser;
+          fetchMessageHistory();
+        }
       }
-    }
+      }
   } catch (error) {
     console.error("There has been a problem with your fetch operation:", error);
   }
@@ -378,7 +409,7 @@ function login() {
         if (data.error) {
           usernameStatus.textContent = data.error;
         } else {
-          currentUser = username;
+          currentUsername = username;
           isAuth = true;
           localStorage.setItem("token", data.userData.accessToken);
           checkAuth();
@@ -393,11 +424,11 @@ function login() {
 
 function sendMessage() {
   const messageInput = document.getElementById("msg-input");
-  if (currentUser && messageInput.value) {
+  if (currentUsername && messageInput.value) {
     const messageData = {
       to: selectedUser,
-      sender: currentUser,
-      username: currentUser,
+      sender: currentUsername,
+      username: currentUsername,
       message: messageInput.value,
     };
     ws.send(JSON.stringify(messageData));

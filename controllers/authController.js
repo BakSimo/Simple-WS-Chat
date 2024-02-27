@@ -21,14 +21,14 @@ class authController {
 
       const emailCandidate = await User.findOne({ email });
       if (emailCandidate) {
-        res
+        return res
           .status(421)
           .json(`A user with the mailing address ${email} already exists`);
       }
 
       const candidate = await User.findOne({ username });
       if (candidate) {
-        res.status(422)("User is already registered!");
+        return res.status(422).json("User is already registered!");
       }
       const userData = await userService.registration(
         email,
@@ -145,16 +145,21 @@ class authController {
     }
   }
 
+  async getUser(req, res, next) {
+    try {
+      const {username} = req.body;
+      const user = await userService.getOurUser(username);
+      return res.json(user);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async setUserImage(req, res, next) {
     try {
-      // Парсим данные пользователя из req.body.currentUser, т.к. мы ожидаем, что это строка JSON
-      // Предполагаем, что currentUser уже является строкой, содержащей username, и не требует парсинга из JSON
-      const currentUserUsername = req.body.currentUser;
+      const currentUser = JSON.parse(req.body.currentUser);
 
-      // req.file - это файл, который был загружен
       const fileData = req.file;
-
-      // Создаем и сохраняем новое изображение, используя данные из fileData
       const newImage = new UserImage({
         filename: fileData.originalname,
         contentType: fileData.mimetype,
@@ -162,19 +167,35 @@ class authController {
       });
       await newImage.save();
 
-      // Обновляем пользователя, используя его username, полученный из currentUser
-      const updatedUser = await User.findOneAndUpdate(
-        { username: currentUserUsername },
-        {
-          $set: { image: newImage._id },
-        },
-        { new: true } // { new: true } возвращает обновленный документ
-      );
+      const user = await User.findOne({ username: currentUser });
+      if(!user){
+        throw apiError.BadRequest(`User '${currentUser}' not found`);
+      }
 
-      res.send({ message: "Image uploaded successfully", image: updatedUser });
+      const updatedUser = await User.findOneAndUpdate(
+        { username: currentUser },
+        { $set: { image: newImage._id } },
+        { new: true }
+      )
+      
+      res.send(updatedUser);
     } catch (error) {
       console.error(error);
       res.status(500).send(error);
+    }
+  }
+
+  async getUserImage(req, res, next) {
+    try {
+      const image = await UserImage.findById(req.params.id);
+      if (!image) {
+        throw apiError.BadRequest("Image not found");
+      } 
+
+      res.send({ image: `data:${image.contentType};base64,${image.imageBase64}` });
+    } catch (error) {
+      console.error('Error:', error);
+      res.status(500).send('Server error');
     }
   }
 }

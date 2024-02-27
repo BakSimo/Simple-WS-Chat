@@ -104,10 +104,14 @@ class UserService {
     return users;
   }
 
+  async getOurUser(username) {
+    const user = await User.findOne({username});
+    return user;
+  }
+
   async setUserImage(data) {
     try {
       console.log(data.formData);
-      // Создаем и сохраняем новое изображение
       const newImage = new UserImage({
         filename: data.file.originalname,
         contentType: data.file.mimetype,
@@ -115,7 +119,6 @@ class UserService {
       });
       await newImage.save();
 
-      // Находим пользователя по идентификатору и обновляем его поле image, устанавливая в него ID нового изображения
       const userData = await User.findByIdAndUpdate(data.currentUser, {
         $set: { image: newImage._id },
       });

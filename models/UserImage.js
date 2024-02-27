@@ -1,9 +1,9 @@
 const { Schema, model } = require("mongoose");
 
 const UserImage = new Schema({
-  filename: String,
-  contentType: String,
-  imageBase64: String,
+  filename: { type: String, required: true },
+  contentType: { type: String, required: true },
+  imageBase64: { type: String, required: true },
 });
 
-module.exports = model("UserImage", UserImage);
+module.exports = model("Image", UserImage);

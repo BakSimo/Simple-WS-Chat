@@ -51,8 +51,8 @@ app.get("/:page?", (req, res) => {
 const start = async () => {
   try {
     await mongoose.connect(
-      // "mongodb+srv://tigrankarapait:tikuliktikulik2501@cluster0.lvoxgij.mongodb.net/?retryWrites=true&w=majority"
-      "mongodb://localhost:27017/",
+      "mongodb+srv://tigrankarapait:tikuliktikulik2501@cluster0.lvoxgij.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
+      // "mongodb://localhost:27017/",
       {
         useNewUrlParser: true,
         useUnifiedTopology: true,
