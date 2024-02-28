@@ -9,7 +9,6 @@ body {
   background-color: var(--bg-color);
   position: relative;
   overflow: hidden;
-  /* scroll-behavior: smooth; */
 }
 
 button:focus,
@@ -43,6 +42,7 @@ h3 {
   font-size: 18px;
   font-weight: 500;
   color: var(--user-inf-color);
+  text-transform: capitalize;
 }
 
 h4 {
@@ -119,7 +119,7 @@ span {
   --page-box-shadow-color: rgb(157 31 221);
   --main-color: #ff0066;
   --second-color: #863eac;
-  --second-color-hover: #7b30a3;
+  --second-color-hover: #8030ac;
   --second-color-selected: #7b2ba7;
   --text-color: #000000;
   --circles-color: #ff34854d;

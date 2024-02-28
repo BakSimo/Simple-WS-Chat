@@ -39,11 +39,9 @@ app.get("/:page?", (req, res) => {
       res.sendFile(path.join(__dirname, "public", "register.html"));
       break;
     case "chat":
-      // Здесь может быть логика аутентификации перед тем как отдать chat.html
       res.sendFile(path.join(__dirname, "public", "chat.html"));
       break;
     default:
-      // Если нет конкретного маршрута, перенаправляем на страницу входа или любую другую
       res.redirect("/login");
   }
 });
@@ -52,7 +50,6 @@ const start = async () => {
   try {
     await mongoose.connect(
       "mongodb+srv://tigrankarapait:tikuliktikulik2501@cluster0.lvoxgij.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
-      // "mongodb://localhost:27017/",
       {
         useNewUrlParser: true,
         useUnifiedTopology: true,

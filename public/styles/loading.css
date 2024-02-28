@@ -1,0 +1,27 @@
+.user-loading-rolling-container,
+.list-loading-rolling-container,
+.chat-loading-rolling-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9;
+}
+
+.loading-rolling-box {
+  position: relative;
+  width: 50px;
+  height: 50px;
+}
+
+.loading-rolling-box img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  object-fit: cover;
+}

@@ -47,7 +47,7 @@
     height: 35px;
   }
 
-  .chat-footer{
+  .chat-footer {
     padding: 10px 15px !important;
   }
 }
@@ -56,6 +56,14 @@
 }
 
 @media (max-width: 467px) {
+  .message .message-box {
+    padding: 6px 12px;
+  }
+
+  .message .u-image{
+    min-width: 37px;
+    min-height: 37px;
+  }
 }
 
 @media (max-width: 367px) {

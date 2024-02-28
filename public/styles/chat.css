@@ -27,6 +27,7 @@
 }
 
 .chats-sidebar-header {
+  position: relative;
   display: flex;
   align-items: center;
   width: 100%;
@@ -36,6 +37,7 @@
 
 .chats-sidebar-header .our-user-image {
   position: relative;
+  min-width: 45px;
   width: 45px;
   height: 45px;
   border-radius: 100%;
@@ -54,6 +56,7 @@
 }
 
 .all-chats {
+  position: relative;
   width: 100%;
   height: 80%;
   overflow: auto;
@@ -211,6 +214,7 @@
 }
 
 .chat-container .chat {
+  position: relative;
   max-width: 900px;
   margin-left: auto;
   margin-right: auto;
@@ -375,9 +379,10 @@ input[type="text"] {
 
 .messages .message {
   display: flex;
+  align-items: flex-end;
   max-width: 400px;
   height: auto;
-  margin: 20px 0 20px 10px;
+  margin: 5px 0 5px 10px;
 }
 
 .message .u-image {
@@ -396,6 +401,7 @@ input[type="text"] {
 
 .message .message-box {
   min-width: 0;
+  height: min-content;
   padding: 12px 20px;
   border-radius: 10px;
   background-color: var(--second-bg-color);
@@ -412,15 +418,15 @@ input[type="text"] {
 
 .sender {
   flex-direction: row-reverse;
-  margin: 20px 10px 20px auto !important;
+  margin: 5px 10px 5px auto !important;
 }
 
 .sender .u-image {
-  margin-left: 20px;
+  margin-left: 8px;
 }
 
 .receiver .u-image {
-  margin-right: 20px;
+  margin-right: 8px;
 }
 
 .weAreUser {
@@ -429,6 +435,16 @@ input[type="text"] {
 
 .selected {
   background-color: var(--second-color-selected);
+}
+
+.first-message {
+  position: relative;
+  border-top-left-radius: 0 !important;
+}
+
+.first-message-sender {
+  position: relative;
+  border-top-right-radius: 0 !important;
 }
 
 /* BURGER MENU */

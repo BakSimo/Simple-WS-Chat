@@ -7,6 +7,7 @@
     <title>Talk - Chat</title>
     <link rel="stylesheet" href="./styles/chat.css" />
     <link rel="stylesheet" href="./styles/footer.css" />
+    <link rel="stylesheet" href="./styles/loading.css" />
     <link rel="stylesheet" href="./styles/main.css" />
     <link rel="stylesheet" href="./styles/media/chat_media.css" />
     <link rel="icon" href="./assets/images/talk-ico.png" type="image/x-icon" />
@@ -20,8 +21,13 @@
     <main class="chat-page page">
       <section class="chats-sidebar">
         <header class="chats-sidebar-header">
+          <div class="user-loading-rolling-container">
+            <div class="loading-rolling-box">
+              <img src="./assets/gifs/Rolling-1s-200px.gif" alt="" />
+            </div>
+          </div>
           <div class="our-user-image">
-            <img src="" alt="" style="cursor:pointer;" />
+            <img src="" alt="" style="cursor: pointer" />
           </div>
           <form id="uploadForm">
             <input
@@ -29,9 +35,9 @@
               name="imageFile"
               id="file_upload"
               accept=".jpeg, .png, .jpg"
-              style="display:none;"
+              style="display: none"
             />
-            <button type="submit" style="display: none;"></button>
+            <button type="submit" style="display: none"></button>
           </form>
           <div class="our-user-information">
             <h3 class="our-user-name"></h3>
@@ -69,6 +75,11 @@
           </div>
         </header>
         <div class="all-chats">
+          <div class="list-loading-rolling-container">
+            <div class="loading-rolling-box">
+              <img src="./assets/gifs/Rolling-1s-200px.gif" alt="" />
+            </div>
+          </div>
           <ul class="chats-list"></ul>
         </div>
         <footer class="chat-footer footer">
@@ -144,7 +155,7 @@
         <header class="chat-header">
           <div class="header-inf">
             <div class="selected-user-image">
-              <img src="./assets/images/user-img.png" alt="" />
+              <img src="" alt="" />
             </div>
             <div class="selected-user-information">
               <h3 class="selected-user-name"></h3>
@@ -156,6 +167,11 @@
           </div>
         </header>
         <div class="chat">
+          <div class="chat-loading-rolling-container">
+            <div class="loading-rolling-box">
+              <img src="./assets/gifs/Rolling-1s-200px.gif" alt="" />
+            </div>
+          </div>
           <ul class="messages"></ul>
           <div class="message-input-container">
             <input type="text" id="msg-input" placeholder="Type a message..." />

@@ -2,14 +2,20 @@ const ws = new WebSocket("ws://localhost:3000");
 
 const messageInput = document.getElementById("msg-input");
 const typingIndicator = document.querySelector(".selected-user-status");
-let typingTimeout;
 
+let typingTimeout;
 let currentUser = null;
 let currentUsername = null;
 let currentEmail = null;
+let currentUserImage = null;
 let selectedUser = null;
+let selectedUserImg = null;
 let isAuth = false;
-let isLoading = false;
+let isUserLoading = true;
+let isChatsListLoading = true;
+let isChatLoading = true;
+let lastSender = null;
+let messagesInARow = 0;
 
 (async () => {
   if (localStorage.getItem("token")) {
@@ -89,20 +95,41 @@ ws.onmessage = function (event) {
       const messagesList = document.querySelector(".messages");
       const isSender = data.sender === currentUsername;
       const messageLi = document.createElement("li");
+
+      if (lastSender === data.sender) {
+        messagesInARow++;
+      } else {
+        messagesInARow = 1;
+      }
+
+      const shouldHideUserImage = lastSender === data.sender;
+      const specialStyleForFirstMessage =
+        messagesInARow === 1 && isSender
+          ? "first-message-sender"
+          : messagesInARow === 1
+          ? "first-message"
+          : "";
+
       messageLi.className = `message ${isSender ? "sender" : "receiver"}`;
       messageLi.innerHTML = `
-        <div class="u-image">
-          <img src="${
-            isSender
-              ? "./assets/images/our-user-img.png"
-              : "./assets/images/user-img.png"
-          }" alt="" />
-        </div>
-        <div class="message-box">
-          <p>${data.message}</p>
-        </div>`;
+      <div class="u-image" ${
+        shouldHideUserImage ? 'style="display: none;"' : ""
+      }>
+        <img src="${isSender ? currentUserImage : selectedUserImg}" alt="" />
+      </div>
+      <div class="message-box ${specialStyleForFirstMessage}"" ${
+        shouldHideUserImage && isSender
+          ? 'style="margin-right: 53px"'
+          : shouldHideUserImage && !isSender
+          ? 'style = "margin-left: 53px"'
+          : ""
+      }>
+        <p>${data.message}</p>
+      </div>`;
 
       messagesList.appendChild(messageLi);
+      lastSender = data.sender;
+
       scrollToBottom(messagesList);
     }
   }
@@ -115,39 +142,55 @@ if (window.location.pathname === "/chat") {
     clearTimeout(typingTimeout);
     typingTimeout = setTimeout(() => {
       typingIndicator.textContent = "";
-    }, 2000);
+    }, 3000);
   });
 
-  document.querySelector('.our-user-image img').addEventListener('click', function() {
-    document.getElementById('file_upload').click();
-});
+  document
+    .querySelector(".our-user-image img")
+    .addEventListener("click", function () {
+      document.getElementById("file_upload").click();
+    });
 
-document.getElementById('file_upload').addEventListener('change', function() {
-    if (this.files.length > 0) {
+  document
+    .getElementById("file_upload")
+    .addEventListener("change", function () {
+      if (this.files.length > 0) {
+        const ourUserImage = document.querySelector(".our-user-image");
+        const image = ourUserImage.querySelector("img");
         const formData = new FormData();
+
         formData.append("image", this.files[0]);
         formData.append("currentUser", JSON.stringify(currentUsername));
 
-        fetch("auth/upload", {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-            body: formData,
-        })
-        .then(response => response.json())
-        .then(data => {
-            currentUser = data;
-            getUserImage(currentUser);
-            getOurUser(currentUser.username);
-        })
-        .catch(error => {
-            console.error("Error:", error);
-        });
-    }
-});
+        const file = this.files[0];
+        const reader = new FileReader();
 
+        reader.onload = (e) => {
+          debugger;
+          image.src = e.target.result;
+        };
+
+        reader.readAsDataURL(file);
+
+        fetchWithAuthCheck("auth/upload", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: formData,
+        });
+        // .then((response) => response.json())
+        // .then((data) => {
+        //   currentUser = data;
+        //   getUserImage(currentUser);
+        //   getOurUser(currentUser.username);
+        // })
+        // .catch((error) => {
+        //   console.error("Error:", error);
+        // });
+      }
+    });
 }
 
 async function getUserImage(user) {
@@ -158,14 +201,12 @@ async function getUserImage(user) {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
   });
-  debugger
   if (!response.ok) {
     throw new Error("Network response was not ok");
   }
   const data = await response.json();
   return { user: user, image: data.image };
 }
-
 
 function sendTypingNotification(senderName, receiverName) {
   if (ws.readyState === WebSocket.OPEN) {
@@ -205,7 +246,18 @@ async function logout() {
   }
 }
 
-async function fetchMessageHistory() {
+async function getMessageHistory() {
+  const selectedUsername = document.querySelector(".selected-user-name");
+  const selectedUserImage = document.querySelector(".selected-user-image");
+  const userImage = selectedUserImage.querySelector("img");
+  const messagesList = document.querySelector(".messages");
+
+  selectedUsername.textContent = "";
+  userImage.src = "";
+  messagesList.innerHTML = "";
+
+  isChatLoading = true;
+  loadingRolling();
   try {
     const response = await fetchWithAuthCheck("/auth/history", {
       method: "POST",
@@ -218,33 +270,57 @@ async function fetchMessageHistory() {
         sender: currentUsername,
       }),
     });
-
     if (!response.ok) {
       throw new Error("Network response was not ok");
     }
-
     const messagesData = await response.json();
-    const messagesList = document.querySelector(".messages");
-    messagesList.innerHTML = "";
+    const user = await getUser(selectedUser);
+    const userData = await getUserImage(user);
+
+    isChatLoading = false;
+    loadingRolling();
+
+    userImage.src = userData.image;
+    selectedUserImg = userData.image;
+    selectedUsername.textContent = selectedUser;
 
     for (const data of messagesData) {
       const isSender = data.sender === currentUsername;
       const messageLi = document.createElement("li");
       messageLi.className = `message ${isSender ? "sender" : "receiver"}`;
 
+      if (lastSender === data.sender) {
+        messagesInARow++;
+      } else {
+        messagesInARow = 1;
+      }
+
+      const shouldHideUserImage = lastSender === data.sender;
+      const specialStyleForFirstMessage =
+        messagesInARow === 1 && isSender
+          ? "first-message-sender"
+          : messagesInARow === 1
+          ? "first-message"
+          : "";
+
       messageLi.innerHTML = `
-        <div class="u-image">
-        <img src="${
-          isSender
-            ? "./assets/images/our-user-img.png"
-            : "./assets/images/user-img.png"
-        }" alt="" />
+        <div class="u-image" ${
+          shouldHideUserImage ? 'style="display: none;"' : ""
+        }>
+          <img src="${isSender ? currentUserImage : userImage.src}" alt="" />
         </div>
-        <div class="message-box">
+        <div class="message-box ${specialStyleForFirstMessage}"" ${
+        shouldHideUserImage && isSender
+          ? 'style="margin-right: 53px"'
+          : shouldHideUserImage && !isSender
+          ? 'style = "margin-left: 53px"'
+          : ""
+      }>
           <p>${data.message}</p>
         </div>`;
 
       messagesList.appendChild(messageLi);
+      lastSender = data.sender;
     }
     scrollToBottom(messagesList);
   } catch (error) {
@@ -253,14 +329,16 @@ async function fetchMessageHistory() {
 }
 
 async function getOurUser(username) {
+  isUserLoading = true;
+  loadingRolling();
   try {
-    const response = await fetchWithAuthCheck("/auth/user", {
+    const response = await fetchWithAuthCheck("/auth/currentUser", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
-      body: JSON.stringify({username: username}),
+      body: JSON.stringify({ username: username }),
     });
     if (!response.ok) {
       throw new Error("Network response was not ok");
@@ -273,17 +351,41 @@ async function getOurUser(username) {
     const ourUserEmail = document.querySelector(".our-user-email");
 
     const userData = await getUserImage(data);
+    isUserLoading = false;
+    loadingRolling();
+
+    currentUserImage = userData.image;
     image.src = userData.image;
     ourUserName.textContent = currentUsername;
     ourUserEmail.textContent = currentEmail;
-      
+  } catch (error) {
+    console.error("There has been a problem with your fetch operation:", error);
+  }
+}
+
+async function getUser(username) {
+  try {
+    const response = await fetchWithAuthCheck("/auth/user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ username: username }),
+    });
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
     }
-   catch (error) {
+    const data = await response.json();
+    return data;
+  } catch (error) {
     console.error("There has been a problem with your fetch operation:", error);
   }
 }
 
 async function getUsersList() {
+  isChatsListLoading = true;
+  loadingRolling();
   try {
     const response = await fetchWithAuthCheck("/auth/users", {
       method: "GET",
@@ -296,22 +398,22 @@ async function getUsersList() {
       throw new Error("Network response was not ok");
     }
     const usersData = await response.json();
-
     const usersList = document.querySelector(".chats-list");
-    const selectedUsername = document.querySelector(".selected-user-name");
 
     usersList.innerHTML = "";
     let isFirstUser = true;
 
+    isChatsListLoading = false;
+    loadingRolling();
+
     for (const data of usersData) {
       if (data.username === currentUsername) {
         continue;
-      }else{
+      } else {
         const userData = await getUserImage(data);
-        const areWeAUser = data.username === currentUsername;
         const userLi = document.createElement("li");
-  
-        userLi.className = `user ${areWeAUser ? "weAreUser" : ""}`;
+
+        userLi.className = `user`;
         userLi.innerHTML = `
           <div class="user-image">
             <img src="${userData.image}" alt="" />
@@ -326,25 +428,25 @@ async function getUsersList() {
         `;
         usersList.appendChild(userLi);
         userLi.addEventListener("click", function () {
+          if (selectedUser === data.username) return;
           selectedUser = data.username;
-  
           document
             .querySelectorAll(".user")
             .forEach((item) => item.classList.remove("selected"));
           this.classList.add("selected");
-          selectedUsername.textContent = selectedUser;
-          fetchMessageHistory();
+
+          getMessageHistory();
+          toggleMenu();
         });
-  
-        if (isFirstUser && !areWeAUser) {
+
+        if (isFirstUser) {
           selectedUser = data.username;
           isFirstUser = false;
           userLi.classList.add("selected");
-          selectedUsername.textContent = selectedUser;
-          fetchMessageHistory();
+          getMessageHistory();
         }
       }
-      }
+    }
   } catch (error) {
     console.error("There has been a problem with your fetch operation:", error);
   }
@@ -433,4 +535,31 @@ function sendMessage() {
 
 function scrollToBottom(element) {
   element.scrollTop = element.scrollHeight;
+}
+
+function loadingRolling() {
+  const userLoadingContainer = document.querySelector(
+    ".user-loading-rolling-container"
+  );
+  const listLoadingContainer = document.querySelector(
+    ".list-loading-rolling-container"
+  );
+  const chatLoadingContainer = document.querySelector(
+    ".chat-loading-rolling-container"
+  );
+  if (isUserLoading) {
+    userLoadingContainer.style.display = "flex";
+  } else if (!isUserLoading) {
+    userLoadingContainer.style.display = "none";
+  }
+  if (isChatsListLoading) {
+    listLoadingContainer.style.display = "flex";
+  } else if (!isChatsListLoading) {
+    listLoadingContainer.style.display = "none";
+  }
+  if (isChatLoading) {
+    chatLoadingContainer.style.display = "flex";
+  } else if (!isChatLoading) {
+    chatLoadingContainer.style.display = "none";
+  }
 }

@@ -1,7 +1,6 @@
 const User = require("../models/User");
 const UserImage = require("../models/UserImage");
 const Message = require("../models/Message");
-const bcrypt = require("bcryptjs");
 const { CLIENT_URL } = require("../config");
 const { validationResult } = require("express-validator");
 const userService = require("../services/userService");
@@ -145,9 +144,19 @@ class authController {
     }
   }
 
+  async getOurUser(req, res, next) {
+    try {
+      const { username } = req.body;
+      const user = await userService.getOurUser(username);
+      return res.json(user);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getUser(req, res, next) {
     try {
-      const {username} = req.body;
+      const { username } = req.body;
       const user = await userService.getOurUser(username);
       return res.json(user);
     } catch (error) {
@@ -168,7 +177,7 @@ class authController {
       await newImage.save();
 
       const user = await User.findOne({ username: currentUser });
-      if(!user){
+      if (!user) {
         throw apiError.BadRequest(`User '${currentUser}' not found`);
       }
 
@@ -176,9 +185,9 @@ class authController {
         { username: currentUser },
         { $set: { image: newImage._id } },
         { new: true }
-      )
-      
-      res.send(updatedUser);
+      );
+
+      // res.send(updatedUser);
     } catch (error) {
       console.error(error);
       res.status(500).send(error);
@@ -190,12 +199,14 @@ class authController {
       const image = await UserImage.findById(req.params.id);
       if (!image) {
         throw apiError.BadRequest("Image not found");
-      } 
+      }
 
-      res.send({ image: `data:${image.contentType};base64,${image.imageBase64}` });
+      res.send({
+        image: `data:${image.contentType};base64,${image.imageBase64}`,
+      });
     } catch (error) {
-      console.error('Error:', error);
-      res.status(500).send('Server error');
+      console.error("Error:", error);
+      res.status(500).send("Server error");
     }
   }
 }
