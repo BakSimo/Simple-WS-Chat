@@ -107,6 +107,11 @@ class UserService {
     return users;
   }
 
+  async getAllUsersCount() {
+    const count = await User.countDocuments();
+    return count;
+  }
+
   async getOurUser(username) {
     const user = await User.findOne({username});
     return user;

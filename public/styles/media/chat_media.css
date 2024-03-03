@@ -4,6 +4,11 @@
 }
 
 @media (max-width: 867px) {
+  .logo-box {
+    max-width: 45px;
+    max-height: 45px;
+  }
+
   .chats-sidebar {
     width: 100%;
   }
@@ -26,7 +31,7 @@
   }
 
   .chat-container .chat {
-    padding: 0 20px 20px 20px;
+    padding: 0 0 20px 0;
   }
 
   .header-inf.active {
@@ -55,14 +60,29 @@
 @media (max-width: 767px) {
 }
 
+@media (max-width: 567px) {
+  .first-message-sender::before {
+    display: none;
+  }
+
+  .receiver .u-image {
+    margin-right: 5px;
+  }
+
+  .message-box .copy-box {
+    padding: 20px;
+  }
+}
+
 @media (max-width: 467px) {
   .message .message-box {
     padding: 6px 12px;
   }
 
-  .message .u-image{
-    min-width: 37px;
-    min-height: 37px;
+  .message .u-image {
+    margin-top: 3px;
+    min-width: 30px;
+    min-height: 30px;
   }
 }
 

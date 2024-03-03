@@ -84,10 +84,7 @@ class authController {
       const { refreshToken } = req.cookies;
       const { currentUser } = req.body;
       const token = await userService.logout(refreshToken);
-
-      if (activeUsers.has(currentUser)) {
-        activeUsers.delete(currentUser);
-      }
+      activeUsers.delete(currentUser);
       res.clearCookie("refreshToken");
       return res.json({ token, redirectUrl: "/login" });
     } catch (error) {
@@ -139,6 +136,15 @@ class authController {
     try {
       const users = await userService.getAllUsers();
       return res.json(users);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getUsersCount(req, res, next) {
+    try {
+      const count = await userService.getAllUsersCount();
+      return res.json(count);
     } catch (error) {
       next(error);
     }

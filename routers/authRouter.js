@@ -41,6 +41,7 @@ router.post("/user", authMiddleware, controller.getUser);
 router.get("/activate/:link", controller.activate);
 router.get("/refresh", controller.refresh);
 router.get("/users", authMiddleware, controller.getUsers);
+router.get("/users/count", authMiddleware, controller.getUsersCount);
 router.get("/image/:id", controller.getUserImage);
 
 module.exports = router;

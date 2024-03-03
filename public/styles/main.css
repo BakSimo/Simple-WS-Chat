@@ -1,8 +1,11 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap");
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Noto Sans", sans-serif;
 }
 
 body {
@@ -20,6 +23,7 @@ li {
   list-style: none;
 }
 
+p,
 img {
   user-select: none;
 }
@@ -121,6 +125,7 @@ span {
   --second-color: #863eac;
   --second-color-hover: #8030ac;
   --second-color-selected: #7b2ba7;
+  --our-user-header-color: #6c2094;
   --text-color: #000000;
   --circles-color: #ff34854d;
   --mobile-circles-color: #ff348533;
@@ -129,7 +134,10 @@ span {
   --user-subinf-color: #cc92eb;
   --chat-scrollbar-color: #e8bffd;
   --chats-scrollbar-color: #db5188;
+  --action-status-color: #ff00666e;
   --status-color: #ffa3c8;
+  --skeleton-loadin-fist-color: #ffffff64;
+  --skeleton-loadin-last-color: #ffffff2e;
 }
 
 ::-webkit-scrollbar {
