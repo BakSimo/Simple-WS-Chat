@@ -79,7 +79,9 @@
               />
               <h6 id="login_password_status">Enter your password</h6>
             </div>
-            <div class="login-button" onclick="login()">Sign in</div>
+            <div type="submit" class="login-button" onclick="login()">
+              Sign in
+            </div>
           </form>
           <div class="login-links">
             <h6><a href="./register.html">Create account</a></h6>
@@ -120,6 +122,31 @@
         <div class="circle"></div>
       </div>
     </main>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Получаем элементы полей ввода и кнопку отправки формы
+        const usernameInput = document.getElementById("login_username_input");
+        const passwordInput = document.getElementById("login_password_input");
+        const loginForm = document.querySelector(".login-form");
+
+        // Функция для обработки события нажатия Enter на поле ввода имени пользователя
+        usernameInput.addEventListener("keydown", function (event) {
+          if (event.key === "Enter") {
+            event.preventDefault(); // Предотвратить действие по умолчанию для Enter (отправка формы)
+            passwordInput.focus(); // Переместить фокус на поле ввода пароля
+          }
+        });
+
+        // Функция для обработки события нажатия Enter на поле ввода пароля
+        passwordInput.addEventListener("keydown", function (event) {
+          if (event.key === "Enter") {
+            event.preventDefault(); // Предотвратить действие по умолчанию для Enter
+            login();
+          }
+        });
+      });
+    </script>
+
     <script src="./js/animation/loginAnimations.js"></script>
     <script src="./js/animation/pageChangeAnimation.js"></script>
     <script src="./client.js"></script>

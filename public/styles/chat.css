@@ -113,12 +113,10 @@
 }
 
 .chats-sidebar-header .our-user-image img {
+  cursor: pointer;
+  pointer-events: all;
   position: absolute;
-  /* top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%); */
   width: 100%;
-  /* height: 100%; */
   object-fit: cover;
 }
 
@@ -320,9 +318,9 @@ input[type="text"] {
 
 .emoji-btn {
   position: relative;
+  display: flex;
   align-items: center;
   justify-content: center;
-  display: flex;
   width: 10%;
   height: 90%;
   margin-right: 10px;
@@ -363,6 +361,8 @@ input[type="text"] {
   width: 30px;
   border-radius: 0.25rem;
   font-size: 1.4rem;
+  cursor: pointer;
+  user-select: none;
 }
 
 .emoji-selector input {
@@ -384,7 +384,8 @@ input[type="text"] {
 }
 
 .emoji-selector::-webkit-scrollbar-track {
-  background-color: var(--second-bg-color);
+  max-height: 90%;
+  background-color: transparent;
 }
 
 .circles {
@@ -523,6 +524,7 @@ input[type="text"] {
   max-width: 100%;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  text-align: justify;
 }
 
 .message-box .copy-box {

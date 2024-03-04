@@ -73,9 +73,13 @@
                   <div class="show-password-box">
                     <div
                       class="show-password-btn"
-                      onclick="togglePasswordShow()"
+                      onclick="togglePassword()"
                     >
-                      <img src="./assets/images/talk-ico.png" alt="" />
+                      <img
+                        id="password_icon"
+                        src="./assets/images/hide_password.png"
+                        alt=""
+                      />
                     </div>
                   </div>
                 </div>
@@ -94,9 +98,13 @@
                   <div class="show-password-box">
                     <div
                       class="show-password-btn"
-                      onclick="toggleConfirmPasswordShow()"
+                      onclick="toggleConfirmPassword()"
                     >
-                      <img src="./assets/images/talk-ico.png" alt="" />
+                      <img
+                        id="confirm_password_icon"
+                        src="./assets/images/hide_password.png"
+                        alt=""
+                      />
                     </div>
                   </div>
                 </div>
@@ -105,9 +113,7 @@
             <h6 class="input-helper password-helper">
               Use 6 or more characters whit mix of letters, numbers & simbols
             </h6>
-            <div class="registration-button" onclick="register()">
-              Sign up
-            </div>
+            <div class="registration-button" onclick="register()">Sign up</div>
           </form>
           <div class="registration-links">
             <h6><a href="./login.html">Sign in</a></h6>

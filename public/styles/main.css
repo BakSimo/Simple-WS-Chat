@@ -26,6 +26,10 @@ li {
 p,
 img {
   user-select: none;
+  pointer-events: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 label {

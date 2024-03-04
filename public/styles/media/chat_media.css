@@ -43,7 +43,7 @@
   }
 
   .messages .message {
-    max-width: 285px;
+    max-width: 300px;
   }
 
   .back-btn svg,
@@ -61,6 +61,19 @@
 }
 
 @media (max-width: 567px) {
+  .messages .message {
+    max-width: 265px;
+  }
+
+  .emoji-btn {
+    width: 13%;
+  }
+
+  .emoji-btn svg {
+    width: 70%;
+    height: 70%;
+  }
+
   .first-message-sender::before {
     display: none;
   }

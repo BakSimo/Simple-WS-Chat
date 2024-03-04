@@ -144,9 +144,9 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  right: 2px;
-  min-width: 35px;
-  height: 35px;
+  right: 6px;
+  min-width: 25px;
+  height: 25px;
 }
 
 .show-password-box .show-password-btn {

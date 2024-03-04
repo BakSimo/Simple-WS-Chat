@@ -1,5 +1,9 @@
 const ws = new WebSocket("ws://localhost:3000");
-document.addEventListener("DOMContentLoaded", getUsersCount);
+document.addEventListener("DOMContentLoaded", () => {
+  if (localStorage.getItem("token")) {
+    getUsersCount();
+  }
+});
 window.addEventListener("resize", getMessageHistory);
 
 const messageInput = document.getElementById("msg-input");
@@ -63,7 +67,6 @@ async function checkAuth() {
       currentUser = data.user;
       currentUsername = data.user.username;
       currentEmail = data.user.email;
-      // await getUserImage(currentUser);
       await getOurUser(currentUsername);
     }
   } catch (error) {
@@ -83,7 +86,7 @@ ws.onmessage = function (event) {
   }
 
   if (data.type === "typing") {
-    if (data.receiver !== selectedUser) {
+    if (data.receiver !== selectedUser && data.sender === selectedUser) {
       typingIndicator.textContent = `Typing...`;
       clearTimeout(typingTimeout);
       typingTimeout = setTimeout(() => {
@@ -128,11 +131,19 @@ ws.onmessage = function (event) {
 
       const messageBoxDiv = document.createElement("div");
       messageBoxDiv.className = `message-box ${specialStyleForFirstMessage}`;
-      if (shouldHideUserImage && isSender) {
-        messageBoxDiv.style.marginRight = "53px";
-      } else if (shouldHideUserImage && !isSender) {
-        messageBoxDiv.style.marginLeft = "53px";
+
+      if (window.innerWidth <= 467 && shouldHideUserImage && isSender) {
+        messageBoxDiv.style.marginRight = "0";
+      } else if (window.innerWidth <= 467 && shouldHideUserImage && !isSender) {
+        messageBoxDiv.style.marginLeft = "35px";
+      } else {
+        if (shouldHideUserImage && isSender) {
+          messageBoxDiv.style.marginRight = "53px";
+        } else if (shouldHideUserImage && !isSender) {
+          messageBoxDiv.style.marginLeft = "53px";
+        }
       }
+
       const messageP = document.createElement("p");
       messageP.textContent = data.message;
       messageBoxDiv.appendChild(messageP);
@@ -163,11 +174,22 @@ ws.onmessage = function (event) {
       messagesList.appendChild(messageLi);
 
       lastSender = data.sender;
-
       scrollToBottom(messagesList);
+    }
+    if (data.sender !== currentUsername && data.sender !== selectedUser) {
+      updateUserImage(data.sender);
     }
   }
 };
+
+function updateUserImage(sender) {
+  const userImageElement = document.querySelector(
+    `[data-username="${sender}"] .bell img`
+  );
+  if (userImageElement) {
+    userImageElement.src = "./assets/images/active-bell.png";
+  }
+}
 
 if (window.location.pathname === "/chat") {
   messageInput.addEventListener("input", () => {
@@ -200,7 +222,6 @@ if (window.location.pathname === "/chat") {
         const reader = new FileReader();
 
         reader.onload = (e) => {
-          debugger;
           image.src = e.target.result;
         };
 
@@ -214,15 +235,8 @@ if (window.location.pathname === "/chat") {
           },
           body: formData,
         });
-        // .then((response) => response.json())
-        // .then((data) => {
-        //   currentUser = data;
-        //   getUserImage(currentUser);
-        //   getOurUser(currentUser.username);
-        // })
-        // .catch((error) => {
-        //   console.error("Error:", error);
-        // });
+
+        window.location.reload();
       }
     });
 }
@@ -529,17 +543,29 @@ async function getUsersList() {
             <img src="./assets/images/bell.png" alt="" />
           </div>
         `;
+        userLi.setAttribute("data-username", data.username);
+
         usersList.replaceChild(userLi, usersList.childNodes[index++]);
         userLi.addEventListener("click", function () {
           if (selectedUser === data.username) return;
+
           selectedUser = data.username;
           document
             .querySelectorAll(".user")
             .forEach((item) => item.classList.remove("selected"));
           this.classList.add("selected");
 
+          const userImageElement = document.querySelector(
+            `[data-username="${selectedUser}"] .bell img`
+          );
+          if (userImageElement) {
+            userImageElement.src = "./assets/images/bell.png";
+          }
+
           getMessageHistory();
-          toggleMenu();
+          if (window.innerWidth <= 867) {
+            toggleMenu();
+          }
         });
 
         if (isFirstUser) {
@@ -559,31 +585,40 @@ function register() {
   const email = document.getElementById("registration_email_input").value;
   const username = document.getElementById("registration_username_input").value;
   const password = document.getElementById("registration_password_input").value;
+  const confirmPassword = document.getElementById(
+    "registration_confirm_password_input"
+  ).value;
   const emailHelper = document.querySelector(".email-helper");
   const usernameHelper = document.querySelector(".username-helper");
   const passwordHelper = document.querySelector(".password-helper");
 
-  fetch("/auth/registration", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email, username, password }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.errors) {
-        const messages = data.errors.map((error) => error.msg).join(", ");
-        emailHelper.textContent = messages;
-        document.getElementById("registration_username_input").value = "";
-        document.getElementById("registration_password_input").value = "";
-      } else {
-        emailHelper.textContent = data;
-        document.getElementById("registration_username_input").value = "";
-        document.getElementById("registration_password_input").value = "";
-      }
+  if (password === confirmPassword) {
+    fetch("/auth/registration", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, username, password }),
     })
-    .catch((error) => console.log(error));
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.errors) {
+          const messages = data.errors.map((error) => error.msg).join(", ");
+          emailHelper.textContent = messages;
+          document.getElementById("registration_username_input").value = "";
+          document.getElementById("registration_password_input").value = "";
+          document.getElementById("registration_confirm_password_input").value = "";
+        } else {
+          emailHelper.textContent = data;
+          document.getElementById("registration_username_input").value = "";
+          document.getElementById("registration_password_input").value = "";
+          document.getElementById("registration_confirm_password_input").value = "";
+        }
+      })
+      .catch((error) => console.log(error));
+  } else {
+    emailHelper.textContent = "Wrong confirm password";
+  }
 }
 
 function login() {

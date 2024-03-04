@@ -24,6 +24,30 @@ function loadEmoji(data) {
     li.setAttribute("emoji-name", emoji.slug);
     li.textContent = emoji.character;
     emojiList.appendChild(li);
+
+    li.addEventListener("click", function () {
+      var input = document.getElementById("msg-input");
+      insertAtCursor(input, emoji.character);
+    });
+  }
+}
+
+function insertAtCursor(myField, myValue) {
+  if (document.selection) {
+    myField.focus();
+    var sel = document.selection.createRange();
+    sel.text = myValue;
+  } else if (myField.selectionStart || myField.selectionStart == "0") {
+    var startPos = myField.selectionStart;
+    var endPos = myField.selectionEnd;
+    myField.value =
+      myField.value.substring(0, startPos) +
+      myValue +
+      myField.value.substring(endPos, myField.value.length);
+    myField.selectionStart = startPos + myValue.length;
+    myField.selectionEnd = startPos + myValue.length;
+  } else {
+    myField.value += myValue;
   }
 }
 

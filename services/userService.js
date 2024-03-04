@@ -86,9 +86,9 @@ class UserService {
       throw apiError.UnauthorizedError();
     }
     const userData = tokenService.validateRefreshToken(refreshToken);
-    const tokenFromDataBase = await tokenService.findToken(refreshToken);
-    if (!userData || !tokenFromDataBase) {
-      throw apiError.UnauthorizedError();
+    const tokenFromDb = await tokenService.findToken(refreshToken);
+    if (!userData || !tokenFromDb) {
+        throw apiError.UnauthorizedError();
     }
 
     const user = await User.findById(userData.id);
@@ -113,7 +113,7 @@ class UserService {
   }
 
   async getOurUser(username) {
-    const user = await User.findOne({username});
+    const user = await User.findOne({ username });
     return user;
   }
 
@@ -131,7 +131,7 @@ class UserService {
         $set: { image: newImage._id },
       });
       console.log(userData);
-      return userData
+      return userData;
     } catch (error) {
       console.error(error);
     }
