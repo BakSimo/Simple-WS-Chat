@@ -77,7 +77,6 @@ const start = async () => {
             message: clientData.message,
           });
           await message.save();
-
           for (const client of wss.clients) {
             if (client.readyState === WebSocket.OPEN) {
               client.send(JSON.stringify(clientData));
