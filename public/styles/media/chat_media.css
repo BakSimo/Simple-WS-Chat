@@ -31,7 +31,7 @@
   }
 
   .chat-container .chat {
-    padding: 0 0 20px 0;
+    padding: 0 0 10px 0;
   }
 
   .header-inf.active {
@@ -103,6 +103,11 @@
 }
 
 /* MEDIA HEIGHT */
+@media (max-height: 647px) {
+  .chat {
+    height: 88dvh !important;
+  }
+}
 
 @media (max-height: 431px) {
 }

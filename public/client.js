@@ -1,14 +1,7 @@
+// const ws = new WebSocket("ws://167.86.96.177:3000");
 const ws = new WebSocket("ws://localhost:3000");
-document.addEventListener("DOMContentLoaded", () => {
-  if (localStorage.getItem("token")) {
-    getUsersCount();
-  }
-});
-window.addEventListener("resize", getMessageHistory);
 
-const messageInput = document.getElementById("msg-input");
-const typingIndicator = document.querySelector(".selected-user-status");
-
+let lastWidth = window.innerWidth;
 let typingTimeout;
 let currentUser = null;
 let currentUsername = null;
@@ -16,12 +9,31 @@ let currentEmail = null;
 let currentUserImage = null;
 let selectedUser = null;
 let selectedUserImg = null;
+let isSelectedUserOnline = false;
 let isAuth = false;
 let isUserLoading = true;
 let isChatsListLoading = true;
 let isChatLoading = true;
 let lastSender = null;
 let messagesInARow = 0;
+let lastUserMessageElement = null;
+
+document.addEventListener("DOMContentLoaded", () => {
+  if (localStorage.getItem("token")) {
+    getUsersCount();
+  }
+});
+
+window.addEventListener("resize", () => {
+  const currentWidth = window.innerWidth;
+  if (currentWidth !== lastWidth && localStorage.getItem("token")) {
+    getMessageHistory();
+    lastWidth = currentWidth;
+  }
+});
+
+const messageInput = document.getElementById("msg-input");
+const typingIndicator = document.querySelector(".selected-user-status");
 
 (async () => {
   if (localStorage.getItem("token")) {
@@ -60,6 +72,9 @@ async function checkAuth() {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     });
+    if (!response.ok) {
+      document.querySelector(".auth-error-container").style.display = "flex";
+    }
     const data = await response.json();
     if (data.accessToken) {
       localStorage.setItem("token", data.accessToken);
@@ -70,10 +85,151 @@ async function checkAuth() {
       await getOurUser(currentUsername);
     }
   } catch (error) {
+    document.querySelector(".auth-error-container").style.display = "flex";
     console.log(error);
   } finally {
     isLoading = false;
   }
+}
+
+function handleUserStatusChanged(data) {
+  const user = document.querySelector(`[data-username="${data.username}"]`);
+  if (data.isOnline) {
+    isSelectedUserOnline = data.username === selectedUser;
+    user.removeAttribute("data-user-state");
+    user.setAttribute("data-user-state", data.isOnline);
+
+    user.classList.add("active");
+  } else {
+    isSelectedUserOnline = data.username === selectedUser;
+    user.removeAttribute("data-user-state");
+    user.setAttribute("data-user-state", data.isOnline);
+
+    user.classList.remove("active");
+  }
+}
+
+function handleMessage(data) {
+  if (data.sender === selectedUser || data.sender === currentUsername) {
+    const messagesList = document.querySelector(".messages");
+    const isSender = data.sender === currentUsername;
+    const messageLi = document.createElement("li");
+    const actionStatus = document.querySelector(".action-status");
+
+    if (lastSender === data.sender) {
+      messagesInARow++;
+    } else {
+      messagesInARow = 1;
+    }
+
+    if (lastUserMessageElement && isSender && lastSender === data.sender) {
+      lastUserMessageElement.classList.remove("last-message-sender");
+    } else if (
+      lastUserMessageElement &&
+      !isSender &&
+      lastSender === data.sender
+    ) {
+      lastUserMessageElement.classList.remove("last-message");
+    }
+
+    const shouldHideUserImage = lastSender === data.sender;
+    const specialStyleForFirstMessage =
+      messagesInARow === 1 && isSender
+        ? "first-message-sender"
+        : messagesInARow === 1
+        ? "first-message"
+        : "";
+
+    messageLi.className = `message ${isSender ? "sender" : "receiver"}`;
+
+    const userImageDiv = document.createElement("div");
+    userImageDiv.className = "u-image";
+    if ((shouldHideUserImage || window.innerWidth <= 567) && isSender) {
+      userImageDiv.style.display = "none";
+    } else if (shouldHideUserImage && !isSender) {
+      userImageDiv.style.display = "none";
+    }
+
+    const img = document.createElement("img");
+    img.src = isSender ? currentUserImage : selectedUserImg;
+    userImageDiv.appendChild(img);
+
+    const messageBoxDiv = document.createElement("div");
+    messageBoxDiv.className = `message-box ${specialStyleForFirstMessage}`;
+
+    if (window.innerWidth <= 467 && shouldHideUserImage && isSender) {
+      messageBoxDiv.style.marginRight = "0";
+    } else if (window.innerWidth <= 467 && shouldHideUserImage && !isSender) {
+      messageBoxDiv.style.marginLeft = "35px";
+    } else {
+      if (shouldHideUserImage && isSender) {
+        messageBoxDiv.style.marginRight = "51px";
+      } else if (shouldHideUserImage && !isSender) {
+        messageBoxDiv.style.marginLeft = "51px";
+      }
+    }
+
+    const messageP = document.createElement("p");
+    messageP.textContent = data.message;
+    messageBoxDiv.appendChild(messageP);
+
+    const copyBox = document.createElement("div");
+    const copyBtn = document.createElement("div");
+    copyBtn.innerHTML = `<svg width="120px" height="120px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M15 1.25H10.9436C9.10583 1.24998 7.65019 1.24997 6.51098 1.40314C5.33856 1.56076 4.38961 1.89288 3.64124 2.64124C2.89288 3.38961 2.56076 4.33856 2.40314 5.51098C2.24997 6.65019 2.24998 8.10582 2.25 9.94357V16C2.25 17.8722 3.62205 19.424 5.41551 19.7047C5.55348 20.4687 5.81753 21.1208 6.34835 21.6517C6.95027 22.2536 7.70814 22.5125 8.60825 22.6335C9.47522 22.75 10.5775 22.75 11.9451 22.75H15.0549C16.4225 22.75 17.5248 22.75 18.3918 22.6335C19.2919 22.5125 20.0497 22.2536 20.6517 21.6517C21.2536 21.0497 21.5125 20.2919 21.6335 19.3918C21.75 18.5248 21.75 17.4225 21.75 16.0549V10.9451C21.75 9.57754 21.75 8.47522 21.6335 7.60825C21.5125 6.70814 21.2536 5.95027 20.6517 5.34835C20.1208 4.81753 19.4687 4.55348 18.7047 4.41551C18.424 2.62205 16.8722 1.25 15 1.25ZM17.1293 4.27117C16.8265 3.38623 15.9876 2.75 15 2.75H11C9.09318 2.75 7.73851 2.75159 6.71085 2.88976C5.70476 3.02502 5.12511 3.27869 4.7019 3.7019C4.27869 4.12511 4.02502 4.70476 3.88976 5.71085C3.75159 6.73851 3.75 8.09318 3.75 10V16C3.75 16.9876 4.38624 17.8265 5.27117 18.1293C5.24998 17.5194 5.24999 16.8297 5.25 16.0549V10.9451C5.24998 9.57754 5.24996 8.47522 5.36652 7.60825C5.48754 6.70814 5.74643 5.95027 6.34835 5.34835C6.95027 4.74643 7.70814 4.48754 8.60825 4.36652C9.47522 4.24996 10.5775 4.24998 11.9451 4.25H15.0549C15.8297 4.24999 16.5194 4.24998 17.1293 4.27117ZM7.40901 6.40901C7.68577 6.13225 8.07435 5.9518 8.80812 5.85315C9.56347 5.75159 10.5646 5.75 12 5.75H15C16.4354 5.75 17.4365 5.75159 18.1919 5.85315C18.9257 5.9518 19.3142 6.13225 19.591 6.40901C19.8678 6.68577 20.0482 7.07435 20.1469 7.80812C20.2484 8.56347 20.25 9.56458 20.25 11V16C20.25 17.4354 20.2484 18.4365 20.1469 19.1919C20.0482 19.9257 19.8678 20.3142 19.591 20.591C19.3142 20.8678 18.9257 21.0482 18.1919 21.1469C17.4365 21.2484 16.4354 21.25 15 21.25H12C10.5646 21.25 9.56347 21.2484 8.80812 21.1469C8.07435 21.0482 7.68577 20.8678 7.40901 20.591C7.13225 20.3142 6.9518 19.9257 6.85315 19.1919C6.75159 18.4365 6.75 17.4354 6.75 16V11C6.75 9.56458 6.75159 8.56347 6.85315 7.80812C6.9518 7.07435 7.13225 6.68577 7.40901 6.40901Z" fill="#ff0066"></path> </g></svg>`;
+    copyBox.className = "copy-box";
+    copyBtn.className = "copy-btn";
+    copyBtn.addEventListener("click", () => {
+      navigator.clipboard
+        .writeText(data.message)
+        .then(() => {
+          actionStatus.classList.add("action-animation");
+          setTimeout(() => {
+            actionStatus.classList.remove("action-animation");
+          }, 1500);
+        })
+        .catch((err) => {
+          console.error("Ошибка при копировании текста: ", err);
+        });
+    });
+    copyBox.appendChild(copyBtn);
+    messageBoxDiv.appendChild(copyBox);
+
+    messageLi.appendChild(userImageDiv);
+    messageLi.appendChild(messageBoxDiv);
+    messagesList.appendChild(messageLi);
+
+    if (isSender) {
+      lastUserMessageElement = messageBoxDiv;
+      lastUserMessageElement.classList.add("last-message-sender");
+    } else {
+      lastUserMessageElement = messageBoxDiv;
+      lastUserMessageElement.classList.add("last-message");
+    }
+
+    lastSender = data.sender;
+    scrollToBottom(messagesList);
+  }
+  if (data.sender !== currentUsername && data.sender !== selectedUser) {
+    updateUserImage(data.sender);
+  }
+}
+
+function handleTypingMessage(data) {
+  if (data.receiver !== selectedUser && data.sender === selectedUser) {
+    typingIndicator.textContent = `Typing...`;
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+      typingIndicator.textContent = "";
+    }, 3000);
+  }
+}
+
+function sendLogin(ws, username) {
+  const loginMessage = {
+    type: "login",
+    username: username,
+  };
+  ws.send(JSON.stringify(loginMessage));
 }
 
 ws.onmessage = function (event) {
@@ -85,100 +241,29 @@ ws.onmessage = function (event) {
     return;
   }
 
-  if (data.type === "typing") {
-    if (data.receiver !== selectedUser && data.sender === selectedUser) {
-      typingIndicator.textContent = `Typing...`;
-      clearTimeout(typingTimeout);
-      typingTimeout = setTimeout(() => {
-        typingIndicator.textContent = "";
-      }, 3000);
-    }
-  } else {
-    const data = JSON.parse(event.data);
+  switch (data.type) {
+    case "typing":
+      handleTypingMessage(data);
+      break;
+    case "userStatusChanged":
+      if (data.username === currentUsername) {
+        const user = document.querySelector(".chats-sidebar-header");
+        user.setAttribute("data-user-state", data.isOnline ? "true" : "false"); // Ясное указание состояния как строка
 
-    if (data.sender === selectedUser || data.sender === currentUsername) {
-      const messagesList = document.querySelector(".messages");
-      const isSender = data.sender === currentUsername;
-      const messageLi = document.createElement("li");
-      const actionStatus = document.querySelector(".action-status");
-
-      if (lastSender === data.sender) {
-        messagesInARow++;
-      } else {
-        messagesInARow = 1;
-      }
-
-      const shouldHideUserImage = lastSender === data.sender;
-      const specialStyleForFirstMessage =
-        messagesInARow === 1 && isSender
-          ? "first-message-sender"
-          : messagesInARow === 1
-          ? "first-message"
-          : "";
-
-      messageLi.className = `message ${isSender ? "sender" : "receiver"}`;
-
-      const userImageDiv = document.createElement("div");
-      userImageDiv.className = "u-image";
-      if (shouldHideUserImage && isSender) {
-        userImageDiv.style.display = "none";
-      } else if (isSender && window.innerWidth <= 567) {
-        userImageDiv.style.display = "none";
-      }
-      const img = document.createElement("img");
-      img.src = isSender ? currentUserImage : selectedUserImg;
-      userImageDiv.appendChild(img);
-
-      const messageBoxDiv = document.createElement("div");
-      messageBoxDiv.className = `message-box ${specialStyleForFirstMessage}`;
-
-      if (window.innerWidth <= 467 && shouldHideUserImage && isSender) {
-        messageBoxDiv.style.marginRight = "0";
-      } else if (window.innerWidth <= 467 && shouldHideUserImage && !isSender) {
-        messageBoxDiv.style.marginLeft = "35px";
-      } else {
-        if (shouldHideUserImage && isSender) {
-          messageBoxDiv.style.marginRight = "53px";
-        } else if (shouldHideUserImage && !isSender) {
-          messageBoxDiv.style.marginLeft = "53px";
+        if (data.isOnline) {
+          user.classList.add("active");
+        } else {
+          window.location.reload();
+          user.classList.remove("active");
         }
+      } else {
+        handleUserStatusChanged(data);
       }
+      break;
 
-      const messageP = document.createElement("p");
-      messageP.textContent = data.message;
-      messageBoxDiv.appendChild(messageP);
-
-      const copyBox = document.createElement("div");
-      const copyBtn = document.createElement("div");
-      copyBtn.innerHTML = `<svg width="120px" height="120px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M15 1.25H10.9436C9.10583 1.24998 7.65019 1.24997 6.51098 1.40314C5.33856 1.56076 4.38961 1.89288 3.64124 2.64124C2.89288 3.38961 2.56076 4.33856 2.40314 5.51098C2.24997 6.65019 2.24998 8.10582 2.25 9.94357V16C2.25 17.8722 3.62205 19.424 5.41551 19.7047C5.55348 20.4687 5.81753 21.1208 6.34835 21.6517C6.95027 22.2536 7.70814 22.5125 8.60825 22.6335C9.47522 22.75 10.5775 22.75 11.9451 22.75H15.0549C16.4225 22.75 17.5248 22.75 18.3918 22.6335C19.2919 22.5125 20.0497 22.2536 20.6517 21.6517C21.2536 21.0497 21.5125 20.2919 21.6335 19.3918C21.75 18.5248 21.75 17.4225 21.75 16.0549V10.9451C21.75 9.57754 21.75 8.47522 21.6335 7.60825C21.5125 6.70814 21.2536 5.95027 20.6517 5.34835C20.1208 4.81753 19.4687 4.55348 18.7047 4.41551C18.424 2.62205 16.8722 1.25 15 1.25ZM17.1293 4.27117C16.8265 3.38623 15.9876 2.75 15 2.75H11C9.09318 2.75 7.73851 2.75159 6.71085 2.88976C5.70476 3.02502 5.12511 3.27869 4.7019 3.7019C4.27869 4.12511 4.02502 4.70476 3.88976 5.71085C3.75159 6.73851 3.75 8.09318 3.75 10V16C3.75 16.9876 4.38624 17.8265 5.27117 18.1293C5.24998 17.5194 5.24999 16.8297 5.25 16.0549V10.9451C5.24998 9.57754 5.24996 8.47522 5.36652 7.60825C5.48754 6.70814 5.74643 5.95027 6.34835 5.34835C6.95027 4.74643 7.70814 4.48754 8.60825 4.36652C9.47522 4.24996 10.5775 4.24998 11.9451 4.25H15.0549C15.8297 4.24999 16.5194 4.24998 17.1293 4.27117ZM7.40901 6.40901C7.68577 6.13225 8.07435 5.9518 8.80812 5.85315C9.56347 5.75159 10.5646 5.75 12 5.75H15C16.4354 5.75 17.4365 5.75159 18.1919 5.85315C18.9257 5.9518 19.3142 6.13225 19.591 6.40901C19.8678 6.68577 20.0482 7.07435 20.1469 7.80812C20.2484 8.56347 20.25 9.56458 20.25 11V16C20.25 17.4354 20.2484 18.4365 20.1469 19.1919C20.0482 19.9257 19.8678 20.3142 19.591 20.591C19.3142 20.8678 18.9257 21.0482 18.1919 21.1469C17.4365 21.2484 16.4354 21.25 15 21.25H12C10.5646 21.25 9.56347 21.2484 8.80812 21.1469C8.07435 21.0482 7.68577 20.8678 7.40901 20.591C7.13225 20.3142 6.9518 19.9257 6.85315 19.1919C6.75159 18.4365 6.75 17.4354 6.75 16V11C6.75 9.56458 6.75159 8.56347 6.85315 7.80812C6.9518 7.07435 7.13225 6.68577 7.40901 6.40901Z" fill="#ff0066"></path> </g></svg>`;
-      copyBox.className = "copy-box";
-      copyBtn.className = "copy-btn";
-      copyBtn.addEventListener("click", () => {
-        navigator.clipboard
-          .writeText(data.message)
-          .then(() => {
-            actionStatus.classList.add("action-animation");
-            setTimeout(() => {
-              actionStatus.classList.remove("action-animation");
-            }, 1500);
-          })
-          .catch((err) => {
-            console.error("Ошибка при копировании текста: ", err);
-          });
-      });
-      copyBox.appendChild(copyBtn);
-      messageBoxDiv.appendChild(copyBox);
-
-      messageLi.appendChild(userImageDiv);
-      messageLi.appendChild(messageBoxDiv);
-      messagesList.appendChild(messageLi);
-
-      lastSender = data.sender;
-      scrollToBottom(messagesList);
-    }
-    if (data.sender !== currentUsername && data.sender !== selectedUser) {
-      updateUserImage(data.sender);
-    }
+    case "message":
+      handleMessage(data);
+      break;
   }
 };
 
@@ -192,6 +277,9 @@ function updateUserImage(sender) {
 }
 
 if (window.location.pathname === "/chat") {
+  if (!localStorage.getItem("token")) {
+    document.querySelector(".auth-error-container").style.display = "flex";
+  }
   messageInput.addEventListener("input", () => {
     sendTypingNotification(currentUsername, selectedUser);
 
@@ -213,30 +301,75 @@ if (window.location.pathname === "/chat") {
       if (this.files.length > 0) {
         const ourUserImage = document.querySelector(".our-user-image");
         const image = ourUserImage.querySelector("img");
-        const formData = new FormData();
-
-        formData.append("image", this.files[0]);
-        formData.append("currentUser", JSON.stringify(currentUsername));
-
         const file = this.files[0];
-        const reader = new FileReader();
+        const maxFileSize = 20 * 1024 * 1024;
 
-        reader.onload = (e) => {
-          image.src = e.target.result;
-        };
+        if (file.size > maxFileSize) {
+          alert("Размер файла не должен превышать 20 МБ.");
+          this.value = "";
+        } else {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = new Image();
+            img.src = e.target.result;
+            img.onload = () => {
+              const canvas = document.createElement("canvas");
+              const ctx = canvas.getContext("2d");
 
-        reader.readAsDataURL(file);
+              const maxWidth = 800;
+              const maxHeight = 800;
+              let width = img.width;
+              let height = img.height;
 
-        fetchWithAuthCheck("auth/upload", {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: formData,
-        });
+              if (width > height) {
+                if (width > maxWidth) {
+                  height *= maxWidth / width;
+                  width = maxWidth;
+                }
+              } else {
+                if (height > maxHeight) {
+                  width *= maxHeight / height;
+                  height = maxHeight;
+                }
+              }
+              canvas.width = width;
+              canvas.height = height;
 
-        window.location.reload();
+              ctx.drawImage(img, 0, 0, width, height);
+
+              canvas.toBlob(
+                (blob) => {
+                  const formData = new FormData();
+                  formData.append("image", blob, file.name);
+                  formData.append(
+                    "currentUser",
+                    JSON.stringify(currentUsername)
+                  );
+
+                  fetchWithAuthCheck("auth/upload", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                      Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                    body: formData,
+                  })
+                    .then((response) => {
+                      if (response.ok) {
+                        window.location.reload();
+                      } else {
+                        throw new Error("Запрос не удался.");
+                      }
+                    })
+                    .catch((error) => console.error("Ошибка:", error));
+                },
+                "image/jpeg",
+                0.85
+              );
+            };
+          };
+          reader.readAsDataURL(file);
+        }
       }
     });
 }
@@ -280,6 +413,7 @@ async function logout() {
 }
 
 async function getMessageHistory() {
+  const selectedUserState = document.querySelector(".header-inf");
   const selectedUsername = document.querySelector(".selected-user-name");
   const selectedUserImage = document.querySelector(".selected-user-image img");
   const selectedUserSkeleton = document.querySelector(".selected-user-name");
@@ -292,7 +426,7 @@ async function getMessageHistory() {
   if (!selectedUserSkeleton.classList.contains("skeleton")) {
     selectedUserSkeleton.classList.add("skeleton", "skeleton-name");
   }
-  messagesList.innerHTML = "";
+  document.querySelector(".messages").innerHTML = "";
 
   isChatLoading = true;
   loadingRolling();
@@ -314,9 +448,19 @@ async function getMessageHistory() {
     const messagesData = await response.json();
     const user = await getUser(selectedUser);
     const userData = await getUserImage(user);
+    messagesList.innerHTML = "";
 
     isChatLoading = false;
     loadingRolling();
+
+    if (isSelectedUserOnline) {
+      selectedUserState.classList.add("active");
+    } else if (
+      !isSelectedUserOnline &&
+      selectedUserState.classList.contains("active")
+    ) {
+      selectedUserState.classList.remove("active");
+    }
 
     selectedUserImage.src = userData.image;
     selectedUserImage.style.height = "100%";
@@ -324,7 +468,7 @@ async function getMessageHistory() {
     selectedUserSkeleton.classList.remove("skeleton", "skeleton-name");
     selectedUsername.textContent = selectedUser;
 
-    for (const data of messagesData) {
+    for (const [i, data] of messagesData.entries()) {
       const isSender = data.sender === currentUsername;
       const messageLi = document.createElement("li");
       messageLi.className = `message ${isSender ? "sender" : "receiver"}`;
@@ -335,26 +479,41 @@ async function getMessageHistory() {
         messagesInARow = 1;
       }
 
+      const isLastInSeries =
+        i === messagesData.length - 1 ||
+        messagesData[i + 1].sender !== data.sender;
+      const isFirstInSeries =
+        i === 0 || messagesData[i - 1].sender !== data.sender;
+
       const shouldHideUserImage = lastSender === data.sender;
-      const specialStyleForFirstMessage =
-        messagesInARow === 1 && isSender
-          ? "first-message-sender"
-          : messagesInARow === 1
-          ? "first-message"
-          : "";
+      const specialStyles = [];
+      if (isFirstInSeries && isSender) {
+        specialStyles.push("first-message-sender");
+      }
+      if (isLastInSeries && isSender) {
+        specialStyles.push("last-message-sender");
+      }
+      if (isFirstInSeries && !isSender) {
+        specialStyles.push("first-message");
+      }
+      if (isLastInSeries && !isSender) {
+        specialStyles.push("last-message");
+      }
+
       const userImageDiv = document.createElement("div");
       userImageDiv.className = "u-image";
-      if (shouldHideUserImage) {
+      if ((shouldHideUserImage || window.innerWidth <= 567) && isSender) {
         userImageDiv.style.display = "none";
-      } else if (isSender && window.innerWidth <= 567) {
+      } else if (shouldHideUserImage && !isSender) {
         userImageDiv.style.display = "none";
       }
+
       const img = document.createElement("img");
       img.src = isSender ? currentUserImage : selectedUserImage.src;
       userImageDiv.appendChild(img);
 
       const messageBoxDiv = document.createElement("div");
-      messageBoxDiv.className = `message-box ${specialStyleForFirstMessage}`;
+      messageBoxDiv.className = `message-box ${specialStyles.join(" ")}`;
 
       if (window.innerWidth <= 467 && shouldHideUserImage && isSender) {
         messageBoxDiv.style.marginRight = "0";
@@ -362,9 +521,9 @@ async function getMessageHistory() {
         messageBoxDiv.style.marginLeft = "35px";
       } else {
         if (shouldHideUserImage && isSender) {
-          messageBoxDiv.style.marginRight = "53px";
+          messageBoxDiv.style.marginRight = "51px";
         } else if (shouldHideUserImage && !isSender) {
-          messageBoxDiv.style.marginLeft = "53px";
+          messageBoxDiv.style.marginLeft = "51px";
         }
       }
 
@@ -378,9 +537,11 @@ async function getMessageHistory() {
       copyBox.className = "copy-box";
       copyBtn.className = "copy-btn";
       copyBtn.addEventListener("click", () => {
+        console.log("COPY 2");
         navigator.clipboard
           .writeText(data.message)
           .then(() => {
+            console.log("COPY");
             actionStatus.classList.add("action-animation");
             setTimeout(() => {
               actionStatus.classList.remove("action-animation");
@@ -395,6 +556,10 @@ async function getMessageHistory() {
       messageLi.appendChild(userImageDiv);
       messageLi.appendChild(messageBoxDiv);
       messagesList.appendChild(messageLi);
+
+      if (isSender) {
+        lastUserMessageElement = messageBoxDiv;
+      }
       lastSender = data.sender;
     }
     scrollToBottom(messagesList);
@@ -438,18 +603,22 @@ async function getUsersCount() {
 }
 
 async function getUserImage(user) {
-  const response = await fetchWithAuthCheck(`auth/image/${user.image}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
-  if (!response.ok) {
-    throw new Error("Network response was not ok");
+  try {
+    const response = await fetchWithAuthCheck(`auth/image/${user.image}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+    const data = await response.json();
+    return { user: user, image: data.image };
+  } catch (error) {
+    console.log(error);
   }
-  const data = await response.json();
-  return { user: user, image: data.image };
 }
 
 async function getOurUser(username) {
@@ -467,6 +636,7 @@ async function getOurUser(username) {
     }
     const data = await response.json();
 
+    const ourUserContainer = document.querySelector(".chats-sidebar-header");
     const ourUserImage = document.querySelector(".our-user-image");
     const image = ourUserImage.querySelector("img");
     const ourUserName = document.querySelector(".our-user-name");
@@ -481,6 +651,9 @@ async function getOurUser(username) {
     image.style.height = "100%";
     ourUserName.textContent = currentUsername;
     ourUserEmail.textContent = currentEmail;
+    ourUserImage.classList.remove("skeleton");
+
+    ourUserContainer.setAttribute("data-user-state", false);
   } catch (error) {
     console.error("There has been a problem with your fetch operation:", error);
   }
@@ -532,8 +705,10 @@ async function getUsersList() {
 
         userLi.className = `user fade-in`;
         userLi.innerHTML = `
+          <div class="is-user-online">
           <div class="user-image">
             <img src="${userData.image}" alt="" />
+          </div>
           </div>
           <div class="user-information">
             <h3 class="user-name">${data.username}</h3>
@@ -544,6 +719,7 @@ async function getUsersList() {
           </div>
         `;
         userLi.setAttribute("data-username", data.username);
+        userLi.setAttribute("data-user-state", false);
 
         usersList.replaceChild(userLi, usersList.childNodes[index++]);
         userLi.addEventListener("click", function () {
@@ -562,6 +738,7 @@ async function getUsersList() {
             userImageElement.src = "./assets/images/bell.png";
           }
 
+          ws.send(JSON.stringify({ type: "selectChat", chatId: selectedUser }));
           getMessageHistory();
           if (window.innerWidth <= 867) {
             toggleMenu();
@@ -572,10 +749,12 @@ async function getUsersList() {
           selectedUser = data.username;
           isFirstUser = false;
           userLi.classList.add("selected");
+          ws.send(JSON.stringify({ type: "selectChat", chatId: selectedUser }));
           getMessageHistory();
         }
       }
     }
+    sendLogin(ws, currentUsername);
   } catch (error) {
     console.error("There has been a problem with your fetch operation:", error);
   }
@@ -607,12 +786,14 @@ function register() {
           emailHelper.textContent = messages;
           document.getElementById("registration_username_input").value = "";
           document.getElementById("registration_password_input").value = "";
-          document.getElementById("registration_confirm_password_input").value = "";
+          document.getElementById("registration_confirm_password_input").value =
+            "";
         } else {
           emailHelper.textContent = data;
           document.getElementById("registration_username_input").value = "";
           document.getElementById("registration_password_input").value = "";
-          document.getElementById("registration_confirm_password_input").value = "";
+          document.getElementById("registration_confirm_password_input").value =
+            "";
         }
       })
       .catch((error) => console.log(error));
@@ -658,18 +839,22 @@ function login() {
 }
 
 function sendMessage(event) {
-  event.preventDefault(); // Предотвращаем обновление страницы
+  event.preventDefault();
+  if (emojiSelector.classList.contains("active")) {
+    emojiSelector.classList.toggle("active");
+  }
 
   const messageInput = document.getElementById("msg-input");
   if (currentUsername && messageInput.value) {
     const messageData = {
+      type: "message",
       to: selectedUser,
       sender: currentUsername,
       username: currentUsername,
       message: messageInput.value,
     };
     ws.send(JSON.stringify(messageData));
-    messageInput.value = ""; // Очищаем поле ввода после отправки
+    messageInput.value = "";
   }
 }
 

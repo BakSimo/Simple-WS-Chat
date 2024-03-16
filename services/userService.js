@@ -36,7 +36,7 @@ class UserService {
       `${API_URL}/auth/activate/${activationLink}`
     );
 
-    const userDto = new UserDto(user);
+    const userDto = new UserDto(user, defaultImageId);
     const tokens = tokenService.generateTokens({ ...userDto });
     await tokenService.saveToken(userDto.id, tokens.refreshToken);
 
@@ -57,7 +57,9 @@ class UserService {
       throw apiError.BadRequest("Incorect password");
     }
 
-    const userDto = new UserDto(user);
+    const defaultImageId = await imageService.ensureDefaultImageExists();
+
+    const userDto = new UserDto(user, defaultImageId);
     const tokens = tokenService.generateTokens({ ...userDto });
     await tokenService.saveToken(userDto.id, tokens.refreshToken);
 
@@ -86,13 +88,14 @@ class UserService {
       throw apiError.UnauthorizedError();
     }
     const userData = tokenService.validateRefreshToken(refreshToken);
-    const tokenFromDb = await tokenService.findToken(refreshToken);
-    if (!userData || !tokenFromDb) {
-        throw apiError.UnauthorizedError();
-    }
+    // const tokenFromDb = await tokenService.findToken(refreshToken);
+    // if (!userData || !tokenFromDb) {
+    //     throw apiError.UnauthorizedError();
+    // }
+    const defaultImageId = await imageService.ensureDefaultImageExists();
 
     const user = await User.findById(userData.id);
-    const userDto = new UserDto(user);
+    const userDto = new UserDto(user, defaultImageId);
     const tokens = tokenService.generateTokens({ ...userDto });
     await tokenService.saveToken(userDto.id, tokens.refreshToken);
 

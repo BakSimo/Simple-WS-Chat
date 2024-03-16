@@ -18,7 +18,7 @@ async function getEmojis() {
 }
 
 function loadEmoji(data) {
-  for (let i = 0; i < Math.min(data.length, 50); i++) {
+  for (let i = 0; i < Math.min(data.length, 49); i++) {
     let emoji = data[i];
     let li = document.createElement("li");
     li.setAttribute("emoji-name", emoji.slug);
@@ -50,15 +50,6 @@ function insertAtCursor(myField, myValue) {
     myField.value += myValue;
   }
 }
-
-// function loadEmoji(data) {
-//   data.forEach((emoji) => {
-//     let li = document.createElement("li");
-//     li.setAttribute("emoji-name", emoji.slug);
-//     li.textContent = emoji.character;
-//     emojiList.appendChild(li);
-//   });
-// }
 
 emojiInput.addEventListener("keyup", (e) => {
   let value = e.target.value;

@@ -9,6 +9,34 @@
   overflow: hidden;
 }
 
+.chat-page .auth-error-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  flex-direction: column;
+  background-color: var(--error-container-bg-color);
+  width: 100%;
+  height: 100dvh;
+  z-index: 1000;
+  display: none;
+}
+
+.auth-error-container h2 {
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--bg-color);
+}
+
+.auth-error-container .error-logout-btn {
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+}
+
 /* CHAT SIDEBAR */
 
 .chats-sidebar {
@@ -16,9 +44,11 @@
   top: 0;
   left: 0;
   width: 35%;
-  height: 100vh;
-  background-color: var(--second-color);
-  transition: all 1s ease 0s;
+  height: 100dvh;
+  /* background-color: var(--second-color); */
+  background-image: linear-gradient(to bottom, #ff0066, #863eac);
+  /* background-image: linear-gradient(to bottom, #e60d64, #863eac); */
+  transition: all 0.5s ease 0s;
   z-index: 11;
 }
 
@@ -31,16 +61,18 @@
   display: flex;
   align-items: center;
   width: 100%;
-  height: 70px;
+  min-height: 53px;
+  height: 8%;
   padding: 10px 30px;
-  background-color: var(--our-user-header-color);
+  /* background-color: var(--our-user-header-color); */
 }
 
 .chats-sidebar-header .our-user-image {
   position: relative;
   min-width: 45px;
-  width: 45px;
-  height: 45px;
+  width: 47px;
+  height: 47px;
+  border: 1px solid var(--bg-color);
   border-radius: 100%;
   overflow: hidden;
 }
@@ -80,17 +112,18 @@
 
 .chats-list .user .user-image {
   position: relative;
-  width: 45px;
-  height: 45px;
+  width: 47px;
+  height: 47px;
+  border: 1px solid var(--bg-color);
   border-radius: 100%;
   overflow: hidden;
 }
 
 .chats-list .user .user-image img {
   position: absolute;
-  /* top: 50%;
+  top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%); */
+  transform: translate(-50%, -50%);
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -118,6 +151,38 @@
   position: absolute;
   width: 100%;
   object-fit: cover;
+}
+
+.is-selected-user-online,
+.is-our-user-online,
+.is-user-online {
+  position: relative;
+}
+
+.is-selected-user-online::after,
+.is-our-user-online::after,
+.is-user-online::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 15px;
+  height: 15px;
+  border-radius: 100%;
+  background-color: #c5d2bb;
+  border: 1px solid var(--bg-color);
+}
+
+.header-inf.active .is-selected-user-online::after {
+  background-color: #92ff41;
+}
+
+.chats-sidebar-header.active .is-our-user-online::after {
+  background-color: #92ff41;
+}
+
+.user.active .is-user-online::after {
+  background-color: #92ff41;
 }
 
 .chats-sidebar-header .our-user-information {
@@ -157,9 +222,9 @@
   top: 0;
   right: 0;
   width: 65%;
-  height: 100vh;
+  height: 100dvh;
   background-color: var(--bg-color);
-  transition: all 1s ease 0s;
+  transition: all 0.5s ease 0s;
 }
 .chat-container.active {
   width: 100%;
@@ -167,8 +232,11 @@
 
 .chat-header {
   position: relative;
+  display: flex;
+  justify-content: center;
   width: 100%;
-  height: auto;
+  min-height: 53px;
+  height: 8%;
   padding: 10px 40px;
   box-shadow: 0 0 14px -4px var(--box-shadow-color);
   background-color: var(--main-color);
@@ -180,8 +248,9 @@
   justify-content: space-between;
   align-items: center;
   max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
+  width: 100%;
+  /* margin-left: auto; */
+  /* margin-right: auto; */
   padding: 0 10px;
   transition: all 1s ease 0s;
 }
@@ -200,17 +269,17 @@
 
 .chat-header .selected-user-image img {
   position: absolute;
-  /* top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%); */
   width: 100%;
-  /* height: 100%; */
   object-fit: cover;
 }
 
 .chat-header .selected-user-information {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   text-align: center;
-  width: 10%;
+  width: 13%;
   height: 100%;
 }
 
@@ -230,14 +299,14 @@
 
 .chat-container .chat {
   position: relative;
-  max-width: 900px;
+  max-width: 975px;
   margin-left: auto;
   margin-right: auto;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   width: 100%;
-  height: 90%;
+  height: 92dvh;
   padding: 0 40px 20px 40px;
 }
 
@@ -278,10 +347,9 @@
   justify-content: space-between;
   align-items: center;
   margin: 0 10px;
-  height: 10%;
   background-color: var(--second-bg-color);
   box-shadow: 0 0 14px -10px var(--box-shadow-color);
-  border-radius: 15px;
+  border-radius: 25px;
   z-index: 1;
 }
 
@@ -393,7 +461,7 @@ input[type="text"] {
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 101%;
   overflow: hidden;
 }
 
@@ -497,8 +565,8 @@ input[type="text"] {
 
 .message .u-image {
   position: relative;
-  min-width: 45px;
-  min-height: 45px;
+  min-width: 43px;
+  min-height: 43px;
   border-radius: 100%;
   overflow: hidden;
 }
@@ -515,9 +583,12 @@ input[type="text"] {
   min-width: 0;
   height: min-content;
   padding: 12px 20px;
-  border-radius: 10px;
+  border-radius: 20px;
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
   background-color: var(--second-bg-color);
   box-shadow: 0 0 14px -10px var(--box-shadow-color);
+  transition: 0.5s all;
 }
 
 .message-box p {
@@ -604,6 +675,20 @@ input[type="text"] {
   border-top-right-radius: 0 !important;
 }
 
+.last-message {
+  border-bottom-left-radius: 20px !important;
+}
+
+.messages .sender .last-message-sender {
+  border-bottom-right-radius: 20px !important;
+}
+
+.sender .message-box {
+  border-radius: 20px;
+  border-bottom-right-radius: 6px !important;
+  border-top-right-radius: 6px !important;
+}
+
 .first-message::before {
   content: "";
   position: absolute;
@@ -639,8 +724,16 @@ input[type="text"] {
   cursor: pointer;
 }
 
-.back-btn svg,
+.back-btn svg {
+  position: absolute;
+  right: 4px;
+  width: 40px;
+  height: 40px;
+}
+
 .brg-menu svg {
+  position: absolute;
+  right: -8px;
   width: 40px;
   height: 40px;
 }
@@ -659,4 +752,10 @@ input[type="text"] {
 
 .back-btn.active {
   display: block;
+}
+
+/* FOOTER */
+
+.footer-text h5 {
+  color: var(--bg-color);
 }

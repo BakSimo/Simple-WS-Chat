@@ -6,6 +6,8 @@
   padding: 0;
   box-sizing: border-box;
   font-family: "Noto Sans", sans-serif;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -30,6 +32,11 @@ img {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+}
+
+svg {
+  width: 100%;
+  height: 100%;
 }
 
 label {
@@ -127,21 +134,26 @@ span {
   --page-box-shadow-color: rgb(157 31 221);
   --main-color: #ff0066;
   --second-color: #863eac;
-  --second-color-hover: #8030ac;
-  --second-color-selected: #7b2ba7;
-  --our-user-header-color: #6c2094;
+  /* --second-color-hover: #8030ac; */
+  --second-color-hover: #00000014;
+  /* --second-color-selected: #7b2ba7; */
+  --second-color-selected: #00000024;
+  /* --our-user-header-color: #6c2094; */
+  --our-user-header-color: #ff0066;
   --text-color: #000000;
   --circles-color: #ff34854d;
   --mobile-circles-color: #ff348533;
   --bell-color: #fee435;
   --user-inf-color: #f1e8f4;
-  --user-subinf-color: #cc92eb;
+  /* --user-subinf-color: #cc92eb; */
+  --user-subinf-color: #f1e7f3cc;
   --chat-scrollbar-color: #e8bffd;
   --chats-scrollbar-color: #db5188;
   --action-status-color: #ff00666e;
   --status-color: #ffa3c8;
   --skeleton-loadin-fist-color: #ffffff64;
   --skeleton-loadin-last-color: #ffffff2e;
+  --error-container-bg-color: rgba(181, 41, 62, 0.69);
 }
 
 ::-webkit-scrollbar {

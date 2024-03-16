@@ -6,7 +6,7 @@ const { validationResult } = require("express-validator");
 const userService = require("../services/userService");
 const apiError = require("../exceptions/apiErroe");
 
-const activeUsers = new Set();
+// const activeUsers = new Set();
 
 class authController {
   async registration(req, res, next) {
@@ -60,19 +60,19 @@ class authController {
         return apiError.BadRequest(`User ${username} was not found`);
       }
 
-      if (activeUsers.has(username)) {
-        return res.status(405).json({ error: "User already logged in" });
-      }
+      // if (activeUsers.has(username)) {
+      //   return res.status(405).json({ error: "User already logged in" });
+      // }
 
-      if (!userData.user.isActivated) {
-        return res.status(405).json({ error: "Activate your email" });
-      }
+      // if (!userData.user.isActivated) {
+      //   return res.status(405).json({ error: "Activate your email" });
+      // }
 
       res.cookie("refreshToken", userData.refreshToken, {
         maxAge: 30 * 24 * 60 * 60 * 1000,
         httpOnly: true,
       });
-      activeUsers.add(username);
+      // activeUsers.add(username);
       return res.json({ userData, redirectUrl: "/chat" });
     } catch (error) {
       next(error);
@@ -84,7 +84,7 @@ class authController {
       const { refreshToken } = req.cookies;
       const { currentUser } = req.body;
       const token = await userService.logout(refreshToken);
-      activeUsers.delete(currentUser);
+      // activeUsers.delete(currentUser);
       res.clearCookie("refreshToken");
       return res.json({ token, redirectUrl: "/login" });
     } catch (error) {
@@ -121,7 +121,7 @@ class authController {
     try {
       const { refreshToken } = req.cookies;
       const userData = await userService.refresh(refreshToken);
-      
+
       res.cookie("refreshToken", userData.refreshToken, {
         maxAge: 30 * 24 * 60 * 60 * 1000,
         httpOnly: true,
@@ -174,7 +174,6 @@ class authController {
   async setUserImage(req, res, next) {
     try {
       const currentUser = JSON.parse(req.body.currentUser);
-
       const fileData = req.file;
       const newImage = new UserImage({
         filename: fileData.originalname,
@@ -182,19 +181,17 @@ class authController {
         imageBase64: fileData.buffer.toString("base64"),
       });
       await newImage.save();
-
       const user = await User.findOne({ username: currentUser });
       if (!user) {
         throw apiError.BadRequest(`User '${currentUser}' not found`);
       }
-
       const updatedUser = await User.findOneAndUpdate(
         { username: currentUser },
         { $set: { image: newImage._id } },
         { new: true }
       );
 
-      // res.send(updatedUser);
+      res.sendStatus(200);
     } catch (error) {
       console.error(error);
       res.status(500).send(error);
